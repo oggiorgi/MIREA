@@ -1,5 +1,5 @@
 # Android разработка
-### [📁 **4sem_zaza** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
+### [📁 **4sem_java coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
 # Работа с базами данных 
 
 ### [📁 **4sem_PBD** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PBD)
