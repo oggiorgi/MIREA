@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/textStudentName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupAttendance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioAbsent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❌" />
+
+        <RadioButton
+            android:id="@+id/radioPresent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✅" />
+
+        <RadioButton
+            android:id="@+id/radioExcused"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🕊️" />
+
+    </RadioGroup>
+
+</LinearLayout> 

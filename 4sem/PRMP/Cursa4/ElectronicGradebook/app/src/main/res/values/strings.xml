@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ElectronicGradebook</string>
+    <string-array name="roles_array">
+        <item>Ученик</item>
+        <item>Учитель</item>
+        <item>Администратор</item>
+    </string-array>
+</resources>

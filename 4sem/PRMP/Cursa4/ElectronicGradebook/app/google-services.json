@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "372032836396",
+    "project_id": "electronicgradebook-487cd",
+    "storage_bucket": "electronicgradebook-487cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:372032836396:android:a4517ec210befdb4da9289",
+        "android_client_info": {
+          "package_name": "com.example.electronicgradebook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9j-gVIbBWdiG2mIoFD5sZKJtLhXdD-eI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
