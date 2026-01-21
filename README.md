@@ -1,5 +1,5 @@
 # Android разработка
-### [📁 **4sem_java coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
+### [📁 **4sem_java_coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
 Проектирование и разработка мобильных приложений (часть 1/1) [II.24-25]
 
 ### [📁 **5sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/5sem/Kotlin)
