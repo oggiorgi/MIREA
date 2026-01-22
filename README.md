@@ -1,4 +1,4 @@
-# Android разработка   <img src="https://upload.wikimedia.org/wikipedia/commons/0/06/Kotlin_Icon.svg" alt="Kotlin" width="100"/>
+# Android разработка   ![Android](https://cdn.simpleicons.org/android/3DDC84) ![Kotlin](https://cdn.simpleicons.org/kotlin/7F52FF) ![Gradle](https://cdn.simpleicons.org/gradle/02303A)
 
 
 ### [📁 **4sem_java_coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
