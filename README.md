@@ -1,4 +1,6 @@
-# Android разработка
+# Android разработка   <img src="https://upload.wikimedia.org/wikipedia/commons/0/06/Kotlin_Icon.svg" alt="Kotlin" width="100"/>
+
+
 ### [📁 **4sem_java_coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PRMP/Cursa4)
 Проектирование и разработка мобильных приложений (часть 1/1) [II.24-25]
 
