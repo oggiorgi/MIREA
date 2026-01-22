@@ -1,5 +1,4 @@
-# Android разработка  
-<p>
+# Android разработка  <p>
   <img src="https://cdn.simpleicons.org/android/3DDC84" alt="Android" height="20"/>
   <img src="https://cdn.simpleicons.org/kotlin/7F52FF" alt="Kotlin" height="20"/>
   <img src="https://cdn.simpleicons.org/gradle/02303A" alt="Gradle" height="20"/>
