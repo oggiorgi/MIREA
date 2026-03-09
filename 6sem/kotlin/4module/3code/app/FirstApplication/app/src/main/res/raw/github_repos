@@ -1,0 +1,72 @@
+[
+  {
+    "id": 101,
+    "full_name": "microsoft/vscode",
+    "description": "Visual Studio Code - код-редактор от Microsoft",
+    "stargazers_count": 165000,
+    "language": "TypeScript"
+  },
+  {
+    "id": 102,
+    "full_name": "torvalds/linux",
+    "description": "Ядро Linux",
+    "stargazers_count": 185000,
+    "language": "C"
+  },
+  {
+    "id": 103,
+    "full_name": "apple/swift",
+    "description": "Язык программирования Swift",
+    "stargazers_count": 68000,
+    "language": "C++"
+  },
+  {
+    "id": 104,
+    "full_name": "flutter/flutter",
+    "description": "UI toolkit от Google для кроссплатформенной разработки",
+    "stargazers_count": 168000,
+    "language": "Dart"
+  },
+  {
+    "id": 105,
+    "full_name": "kubernetes/kubernetes",
+    "description": "Система для оркестрации контейнеров",
+    "stargazers_count": 112000,
+    "language": "Go"
+  },
+  {
+    "id": 106,
+    "full_name": "golang/go",
+    "description": "Язык программирования Go",
+    "stargazers_count": 125000,
+    "language": "Go"
+  },
+  {
+    "id": 107,
+    "full_name": "rust-lang/rust",
+    "description": "Язык программирования Rust",
+    "stargazers_count": 100000,
+    "language": "Rust"
+  },
+  {
+    "id": 108,
+    "full_name": "pytorch/pytorch",
+    "description": "Библиотека машинного обучения на Python",
+    "stargazers_count": 85000,
+    "language": "Python"
+  },
+  {
+    "id": 109,
+    "full_name": "django/django",
+    "description": "Веб-фреймворк на Python",
+    "stargazers_count": 82000,
+    "language": "Python"
+  },
+  {
+    "id": 110,
+    "full_name": "rails/rails",
+    "description": "Ruby on Rails - веб-фреймворк",
+    "stargazers_count": 56000,
+    "language": "Ruby"
+  }
+]
