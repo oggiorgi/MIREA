@@ -6,6 +6,10 @@
 ### [📁 **5sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/5sem/Kotlin)
 Проектирование и разработка мобильных приложений на языке Котлин (часть 1/1) [I.25-26]
 
+### [📁 **6sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/Kotlin)
+Проектирование и разработка мобильных приложений на языке Котлин (часть 1/1) [I.25-26]
+
+
 
 # Работа с базами данных          <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="PostgreSQL" width="30"/>
 ### [📁 **4sem_PBD** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PBD)
