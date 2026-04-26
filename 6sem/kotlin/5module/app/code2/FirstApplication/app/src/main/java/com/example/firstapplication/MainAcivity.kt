@@ -237,7 +237,7 @@ fun launchCamera(context: Context, launcher: androidx.activity.result.ActivityRe
 fun createImageFile(context: Context): File {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     val imageFileName = "IMG_$timeStamp.jpg"
-    val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+    val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)// ← КЛЮЧЕВАЯ СТРОКА
     return File(storageDir, imageFileName)
 }
 
