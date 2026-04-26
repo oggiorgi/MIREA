@@ -19,7 +19,7 @@ class DiaryViewModel(application: Application) : AndroidViewModel(application) {
     val currentEntry: StateFlow<DiaryEntry?> = _currentEntry.asStateFlow()
     
     private val filesDir: File = application.filesDir
-    
+    // ↑ Это Internal Storage: /data/data/<package>/files/
     init {
         loadAllEntries()
     }
