@@ -42,7 +42,7 @@ data class DiaryEntry(
         
         fun fromFile(file: File): DiaryEntry {
             val (timestamp, title) = parseFilename(file.name)
-            val content = file.readText()
+            val content = file.readText()  // ← Чтение из файла
             return DiaryEntry(
                 filename = file.name,
                 title = title,
