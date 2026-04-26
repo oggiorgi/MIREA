@@ -47,7 +47,7 @@ class DiaryViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             val file = File(filesDir, filename)
-            file.writeText(content)
+            file.writeText(content)  // ← Запись в файл
             
             val newEntry = DiaryEntry(
                 filename = filename,
