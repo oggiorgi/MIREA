@@ -26,7 +26,7 @@ fun main() {
         configureRouting()            // GET /
         configureLoginRouting()       // POST /login (ваш существующий)
         configureRegisterRouting()    // POST /register (ваш существующий)
-        prizeRoutes()                 // GET /prizes и другие (НОВЫ
+        prizeRoutes()                 // GET /prizes и другие (НОВЫЙ)
         log.info("Nobel Prize API started on port 8080")
     }.start(wait = true)
 }
