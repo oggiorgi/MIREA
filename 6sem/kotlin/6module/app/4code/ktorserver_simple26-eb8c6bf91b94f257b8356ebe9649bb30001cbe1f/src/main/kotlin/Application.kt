@@ -6,6 +6,7 @@ import io.ktor.server.netty.*
 import org.example.features.login.configureLoginRouting
 import org.example.features.register.configureRegisterRouting
 import org.example.plugins.configureAuthentication
+import org.example.plugins.configureLogging
 import org.example.routing.configureRouting
 import org.example.routing.configureSerialization
 import org.example.routing.prizeRoutes
@@ -27,6 +28,7 @@ fun main() {
         configureLoginRouting()       // POST /login (ваш существующий)
         configureRegisterRouting()    // POST /register (ваш существующий)
         prizeRoutes()                 // GET /prizes и другие (НОВЫЙ)
+        configureLogging()
         log.info("Nobel Prize API started on port 8080")
     }.start(wait = true)
 }
