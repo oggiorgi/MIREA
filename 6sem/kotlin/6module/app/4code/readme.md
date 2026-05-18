@@ -1,1 +1,1 @@
-Серверное приложение “Nobel Prize API”
+Серверное приложение  “Nobel Prize API”
