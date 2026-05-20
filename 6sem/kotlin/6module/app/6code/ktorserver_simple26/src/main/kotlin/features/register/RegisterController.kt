@@ -1,22 +1,13 @@
 package org.example.features.register
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.example.database.UserRepository
 import org.example.utils.isValidateEmail
-import java.util.*
 
 class RegisterController(val call: ApplicationCall) {
-
-    // JWT конфигурация
-    private val jwtSecret = "my-super-secret-key-that-is-at-least-32-chars-long-123456"
-    private val jwtIssuer = "nobel-prize-api"
-    private val jwtAudience = "nobel-prize-api"
-    private val jwtExpiryMinutes = 30
 
     suspend fun registerNewUser() {
         val registerReceiveRemote = call.receive<RegisterReceiveRemote>()
@@ -46,15 +37,6 @@ class RegisterController(val call: ApplicationCall) {
             return
         }
 
-        // 4. Генерируем JWT токен для нового пользователя
-        val token = JWT.create()
-            .withSubject(registerReceiveRemote.login)
-            .withIssuer(jwtIssuer)
-            .withAudience(jwtAudience)
-            .withIssuedAt(Date())
-            .withExpiresAt(Date(System.currentTimeMillis() + jwtExpiryMinutes * 60 * 1000))
-            .sign(Algorithm.HMAC256(jwtSecret))
-
-        call.respond(RegisterResponseRemote(token = token))
+        call.respond(RegisterResponseRemote(information = "Пользователь создался"))
     }
 }
