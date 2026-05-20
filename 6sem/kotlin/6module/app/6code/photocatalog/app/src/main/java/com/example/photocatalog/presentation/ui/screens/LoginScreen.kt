@@ -1,6 +1,7 @@
 package com.example.photocatalog.presentation.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,45 +13,100 @@ import com.example.photocatalog.presentation.viewmodel.AuthViewModel
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    onSuccess: (String) -> Unit  // ← УБРАТЬ @Composable
+    onSuccess: (String) -> Unit
 ) {
+    var isLoginMode by remember { mutableStateOf(true) }
     var login by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val state by authViewModel.state.collectAsState()
 
+    var ignoreFirstSuccess by remember { mutableStateOf(true) }
+
     LaunchedEffect(state) {
         if (state is AuthState.Success) {
-            onSuccess((state as AuthState.Success).token)
+            if (!ignoreFirstSuccess) {
+                onSuccess((state as AuthState.Success).token)
+            }
+            ignoreFirstSuccess = false
         }
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Заголовок
+        Text(
+            text = if (isLoginMode) "Вход" else "Регистрация",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        // Поле Логин
         OutlinedTextField(
             value = login,
             onValueChange = { login = it },
-            label = { Text("Login") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Логин") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Поле Email (только для регистрации)
+        if (!isLoginMode) {
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Поле Пароль
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Пароль") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Кнопка действия
         Button(
-            onClick = { authViewModel.login(login, password) },
+            onClick = {
+                if (isLoginMode) {
+                    authViewModel.login(login, password)
+                } else {
+                    authViewModel.register(login, email, password)
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Login")
+            Text(if (isLoginMode) "Войти" else "Зарегистрироваться")
         }
 
+        // Ссылка для переключения режима
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = if (isLoginMode) "Зарегистрироваться" else "Уже есть аккаунт? Войти",
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable {
+                isLoginMode = !isLoginMode
+                // Очищаем ошибку при переключении
+                if (state is AuthState.Error) {
+                    // сброс состояния
+                }
+            }
+        )
+
+        // Статус загрузки/ошибки
         when (state) {
             is AuthState.Loading -> {
                 Spacer(modifier = Modifier.height(8.dp))

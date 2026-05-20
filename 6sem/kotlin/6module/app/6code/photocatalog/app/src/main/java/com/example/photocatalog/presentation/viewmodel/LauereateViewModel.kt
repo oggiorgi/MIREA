@@ -1,5 +1,6 @@
 package com.example.photocatalog.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.photocatalog.data.local.TokenRepository
@@ -73,6 +74,7 @@ class LaureateViewModel(
             tokenRepository.clearToken()
             _uiState.value = UiState.Loading
             allLaureates = emptyList()
+            Log.d("LaureateViewModel", "User logged out, token cleared")
         }
     }
 }

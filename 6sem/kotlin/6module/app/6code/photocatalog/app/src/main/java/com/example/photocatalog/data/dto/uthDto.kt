@@ -12,4 +12,7 @@ data class LoginResponseDto(val token: String)
 data class RegisterRequestDto(val login: String, val email: String, val password: String)
 
 @Serializable
-data class RegisterResponseDto(val token: String)
+data class RegisterResponseDto(
+    val token: String? = null,
+    val information: String? = null
+)

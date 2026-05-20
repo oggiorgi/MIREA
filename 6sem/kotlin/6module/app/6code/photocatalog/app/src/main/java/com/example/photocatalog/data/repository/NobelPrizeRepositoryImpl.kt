@@ -38,11 +38,26 @@ class NobelPrizeRepositoryImpl(
     }
 
     override suspend fun login(login: String, password: String): String {
-        return api.login(login, password).token
+        val response = api.login(login, password)
+        return response.token
     }
 
     override suspend fun register(login: String, email: String, password: String): String {
-        return api.register(login, email, password).token
-    }
+        val response = api.register(login, email, password)
 
+        // Если есть токен в ответе
+        if (!response.token.isNullOrEmpty()) {
+            Log.d("Repository", "Got token from register response")
+            return response.token
+        }
+
+        // Если сервер вернул только information, делаем логин
+        if (!response.information.isNullOrEmpty()) {
+            Log.d("Repository", "Register returned info, logging in...")
+            val loginResponse = api.login(login, password)
+            return loginResponse.token
+        }
+
+        throw Exception("Registration failed: no token received")
+    }
 }

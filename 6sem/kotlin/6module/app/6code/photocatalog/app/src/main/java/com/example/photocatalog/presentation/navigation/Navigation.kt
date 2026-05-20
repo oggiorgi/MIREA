@@ -32,6 +32,7 @@ fun AppNavigation(
     val token by tokenFlow.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
+    // Следим за токеном и перенаправляем на логин если null
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             navController.navigate("login") {

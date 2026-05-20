@@ -12,7 +12,6 @@ import org.example.plugins.configureLogging
 import org.example.plugins.configureOpenAPI
 import org.example.routing.configureRouting
 import org.example.routing.configureSerialization
-import org.example.routing.favoritesRoutes
 import org.example.routing.prizeRoutes
 import org.example.services.NobelApiService
 
@@ -32,7 +31,6 @@ suspend fun main() {
         configureRegisterRouting()    // POST /register (ваш существующий)
         prizeRoutes()                 // GET /prizes и другие (НОВЫЙ)
         configureLogging()
-        favoritesRoutes()
         configureOpenAPI()
 
 

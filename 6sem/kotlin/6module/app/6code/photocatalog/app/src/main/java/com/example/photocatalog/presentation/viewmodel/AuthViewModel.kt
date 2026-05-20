@@ -1,5 +1,6 @@
 package com.example.photocatalog.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.photocatalog.domain.usecase.LoginUseCase
@@ -39,8 +40,10 @@ class AuthViewModel(
             _state.value = AuthState.Loading
             try {
                 val token = registerUseCase(login, email, password)
+                Log.d("AuthViewModel", "Register success, token: ${token.take(50)}")
                 _state.value = AuthState.Success(token)
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Register failed", e)
                 _state.value = AuthState.Error(e.message ?: "Registration failed")
             }
         }
