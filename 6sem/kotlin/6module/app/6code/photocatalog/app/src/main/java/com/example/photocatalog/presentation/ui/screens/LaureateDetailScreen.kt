@@ -1,77 +1,109 @@
 package com.example.photocatalog.presentation.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.photocatalog.domain.model.Laureate
+import com.example.photocatalog.presentation.viewmodel.LaureateViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaureateDetailScreen(
     year: String,
     category: String,
-    laureates: List<Laureate>
+    laureates: List<Laureate>,
+    viewModel: LaureateViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Детали премии",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    val prizeId = "${category}_$year"
+    val isFavorite by remember { derivedStateOf { viewModel.isFavorite(prizeId) } }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Детали премии") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Год: $year",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = "Категория: ${getCategoryDisplayName(category)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+            // Карточка с основной информацией
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Год: $year",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = "Категория: ${getCategoryDisplayName(category)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
-                Divider()
-
-                Text(
-                    text = "Лауреаты:",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                // ← показываем КАЖДОГО лауреата
-                laureates.forEach { laureate ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                    Button(
+                        onClick = {
+                            if (isFavorite) viewModel.removeFromFavorites(prizeId)
+                            else viewModel.addToFavorites(prizeId)
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = laureate.name,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.primary
+                        Text(if (isFavorite) "Удалить из избранного" else "Добавить в избранное")
+                    }
+                }
+            }
+
+            // Карточка со списком лауреатов
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Лауреаты:",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    laureates.forEach { laureate ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
                             )
-                            Text(
-                                text = "Доля: ${laureate.portion ?: "1"}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                            Text(
-                                text = "Мотивация: ${laureate.motivation}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = laureate.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Участников: ${laureate.portion ?: "Неизвестно"}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                                Text(
+                                    text = laureate.motivation,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }

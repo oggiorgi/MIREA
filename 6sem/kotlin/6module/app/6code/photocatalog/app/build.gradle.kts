@@ -88,4 +88,7 @@ dependencies {
 
     // Для работы с файлами
     implementation("androidx.documentfile:documentfile:1.0.1")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("io.ktor:ktor-client-auth:2.3.12")
 }
