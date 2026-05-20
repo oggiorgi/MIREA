@@ -44,26 +44,11 @@ object AppModule {
         return RegisterUseCase(provideRepository())
     }
 
-    fun provideAddFavoriteUseCase(): AddFavoriteUseCase {
-        return AddFavoriteUseCase(provideRepository())
-    }
-
-    fun provideRemoveFavoriteUseCase(): RemoveFavoriteUseCase {
-        return RemoveFavoriteUseCase(provideRepository())
-    }
-
-    fun provideGetFavoritesUseCase(): GetFavoritesUseCase {
-        return GetFavoritesUseCase(provideRepository())
-    }
-
     fun provideLaureateViewModel(): LaureateViewModel {
         return LaureateViewModel(
             provideGetLaureatesUseCase(),
             provideFilterLaureatesUseCase(),
-            provideAddFavoriteUseCase(),
-            provideRemoveFavoriteUseCase(),
-            provideGetFavoritesUseCase(),
-            provideTokenRepository()
+            provideTokenRepository()  // ← добавил tokenRepository
         )
     }
 

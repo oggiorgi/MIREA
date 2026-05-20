@@ -14,8 +14,6 @@ import com.example.photocatalog.di.AppModule
 import com.example.photocatalog.presentation.navigation.AppNavigation
 import com.example.photocatalog.presentation.viewmodel.AuthViewModel
 import com.example.photocatalog.presentation.viewmodel.AuthViewModelFactory
-import com.example.photocatalog.presentation.viewmodel.LaureateViewModel
-import com.example.photocatalog.presentation.viewmodel.LaureateViewModelFactory
 import com.example.photocatalog.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -39,18 +37,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NobelPrizeApp() {
-    // Получаем ViewModel через фабрики из AppModule
-    val laureateViewModel: LaureateViewModel = viewModel(
-        factory = LaureateViewModelFactory(
-            getLaureatesUseCase = AppModule.provideGetLaureatesUseCase(),
-            filterLaureatesUseCase = AppModule.provideFilterLaureatesUseCase(),
-            addFavoriteUseCase = AppModule.provideAddFavoriteUseCase(),
-            removeFavoriteUseCase = AppModule.provideRemoveFavoriteUseCase(),
-            getFavoritesUseCase = AppModule.provideGetFavoritesUseCase(),
-            tokenRepository = AppModule.provideTokenRepository()
-        )
-    )
-
+    // Создаём только AuthViewModel здесь
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(
             loginUseCase = AppModule.provideLoginUseCase(),
@@ -62,7 +49,6 @@ fun NobelPrizeApp() {
 
     AppNavigation(
         authViewModel = authViewModel,
-        laureateViewModel = laureateViewModel,
         tokenRepository = tokenRepository
     )
 }

@@ -5,30 +5,41 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.photocatalog.di.AppModule
 import com.example.photocatalog.data.local.TokenRepository
 import com.example.photocatalog.presentation.ui.screens.LaureateDetailScreen
 import com.example.photocatalog.presentation.ui.screens.LaureateListScreen
 import com.example.photocatalog.presentation.ui.screens.LoginScreen
 import com.example.photocatalog.presentation.viewmodel.AuthViewModel
 import com.example.photocatalog.presentation.viewmodel.LaureateViewModel
+import com.example.photocatalog.presentation.viewmodel.LaureateViewModelFactory
 import com.example.photocatalog.presentation.viewmodel.UiState
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(
     authViewModel: AuthViewModel,
-    laureateViewModel: LaureateViewModel,
     tokenRepository: TokenRepository
 ) {
     val navController = rememberNavController()
     val tokenFlow = tokenRepository.getTokenFlow()
     val token by tokenFlow.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            navController.navigate("login") {
+                popUpTo("login") { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -38,7 +49,6 @@ fun AppNavigation(
             LoginScreen(
                 authViewModel = authViewModel,
                 onSuccess = { newToken ->
-                    // ✅ Используем coroutineScope вместо LaunchedEffect
                     coroutineScope.launch {
                         tokenRepository.saveToken(newToken)
                         navController.navigate("list") {
@@ -50,6 +60,14 @@ fun AppNavigation(
         }
 
         composable("list") {
+            val laureateViewModel: LaureateViewModel = viewModel(
+                factory = LaureateViewModelFactory(
+                    getLaureatesUseCase = AppModule.provideGetLaureatesUseCase(),
+                    filterLaureatesUseCase = AppModule.provideFilterLaureatesUseCase(),
+                    tokenRepository = tokenRepository
+                )
+            )
+
             LaureateListScreen(
                 viewModel = laureateViewModel,
                 onNavigateToDetail = { year, category ->
@@ -68,6 +86,14 @@ fun AppNavigation(
             val year = backStackEntry.arguments?.getString("year") ?: ""
             val category = backStackEntry.arguments?.getString("category") ?: ""
 
+            val laureateViewModel: LaureateViewModel = viewModel(
+                factory = LaureateViewModelFactory(
+                    getLaureatesUseCase = AppModule.provideGetLaureatesUseCase(),
+                    filterLaureatesUseCase = AppModule.provideFilterLaureatesUseCase(),
+                    tokenRepository = tokenRepository
+                )
+            )
+
             val uiState by laureateViewModel.uiState.collectAsState()
             val laureates = if (uiState is UiState.Success) {
                 (uiState as UiState.Success).laureates.filter {
@@ -75,11 +101,11 @@ fun AppNavigation(
                 }
             } else emptyList()
 
+            // Убираем viewModel из параметров, так как экран его не использует
             LaureateDetailScreen(
                 year = year,
                 category = category,
-                laureates = laureates,
-                viewModel = laureateViewModel
+                laureates = laureates
             )
         }
     }

@@ -24,9 +24,3 @@ data class LaureateResponseDto(
     val share: Int
 )
 
-@Serializable
-data class FavoritePrizeDto(
-    val id: String,
-    val year: Int,
-    val category: String
-)

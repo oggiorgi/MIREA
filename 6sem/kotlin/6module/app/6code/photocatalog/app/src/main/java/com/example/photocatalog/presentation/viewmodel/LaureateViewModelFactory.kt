@@ -8,9 +8,6 @@ import com.example.photocatalog.domain.usecase.*
 class LaureateViewModelFactory(
     private val getLaureatesUseCase: GetLaureatesUseCase,
     private val filterLaureatesUseCase: FilterLaureatesUseCase,
-    private val addFavoriteUseCase: AddFavoriteUseCase,
-    private val removeFavoriteUseCase: RemoveFavoriteUseCase,
-    private val getFavoritesUseCase: GetFavoritesUseCase,
     private val tokenRepository: TokenRepository
 ) : ViewModelProvider.Factory {
 
@@ -20,9 +17,6 @@ class LaureateViewModelFactory(
             return LaureateViewModel(
                 getLaureatesUseCase,
                 filterLaureatesUseCase,
-                addFavoriteUseCase,
-                removeFavoriteUseCase,
-                getFavoritesUseCase,
                 tokenRepository
             ) as T
         }

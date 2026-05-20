@@ -8,19 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.photocatalog.domain.model.Laureate
-import com.example.photocatalog.presentation.viewmodel.LaureateViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaureateDetailScreen(
     year: String,
     category: String,
-    laureates: List<Laureate>,
-    viewModel: LaureateViewModel
+    laureates: List<Laureate>
 ) {
-    val prizeId = "${category}_$year"
-    val isFavorite by remember { derivedStateOf { viewModel.isFavorite(prizeId) } }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,7 +34,6 @@ fun LaureateDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Карточка с основной информацией
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -54,20 +48,9 @@ fun LaureateDetailScreen(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-
-                    Button(
-                        onClick = {
-                            if (isFavorite) viewModel.removeFromFavorites(prizeId)
-                            else viewModel.addToFavorites(prizeId)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (isFavorite) "Удалить из избранного" else "Добавить в избранное")
-                    }
                 }
             }
 
-            // Карточка со списком лауреатов
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

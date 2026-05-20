@@ -1,5 +1,6 @@
 package com.example.photocatalog.data.repository
 
+import android.util.Log
 import com.example.photocatalog.data.dto.*
 import com.example.photocatalog.data.network.ApiService
 import com.example.photocatalog.domain.model.Laureate
@@ -10,10 +11,12 @@ class NobelPrizeRepositoryImpl(
 ) : NobelPrizeRepository {
 
     override suspend fun getLaureates(): List<Laureate> {
-        // Получаем все премии с сервера
+        Log.d("Repository", "=== Getting laureates ===")
         val prizes = api.getAllPrizes()
+        Log.d("Repository", "Got ${prizes.size} prizes")
         val result = mutableListOf<Laureate>()
         for (prize in prizes) {
+            Log.d("Repository", "Getting details for ${prize.year} - ${prize.category}")
             val details = api.getPrizeDetails(prize.year, prize.category)
             for (laureateResp in details.laureates) {
                 result.add(
@@ -23,13 +26,14 @@ class NobelPrizeRepositoryImpl(
                         year = prize.year.toString(),
                         category = prize.category,
                         motivation = laureateResp.motivation,
-                        country = "Unknown", // сервер может потом отдавать страну
+                        country = "Unknown",
                         portraitUrl = null,
                         portion = laureateResp.share.toString()
                     )
                 )
             }
         }
+        Log.d("Repository", "Total laureates: ${result.size}")
         return result
     }
 
@@ -41,15 +45,4 @@ class NobelPrizeRepositoryImpl(
         return api.register(login, email, password).token
     }
 
-    override suspend fun getFavoritePrizes(): List<FavoritePrizeDto> {
-        return api.getFavoritePrizes()
-    }
-
-    override suspend fun addFavorite(prizeId: String) {
-        api.addFavorite(prizeId)
-    }
-
-    override suspend fun removeFavorite(prizeId: String) {
-        api.removeFavorite(prizeId)
-    }
 }
