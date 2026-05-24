@@ -21,6 +21,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt-jvm:3.0.0")
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("at.favre.lib:bcrypt:0.10.2")
+    implementation("org.mindrot:jbcrypt:0.4")
     implementation("io.ktor:ktor-client-cio-jvm:3.0.0")
 
     // PostgreSQL драйвер

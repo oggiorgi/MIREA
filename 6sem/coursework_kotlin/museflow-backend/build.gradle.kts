@@ -20,6 +20,26 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jvm:3.0.0")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:3.0.0")
     implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("org.mindrot:jbcrypt:0.4")
+
+    // PostgreSQL драйвер
+    implementation("org.postgresql:postgresql:42.7.3")
+
+    // Exposed (Kotlin ORM для работы с БД)
+    implementation("org.jetbrains.exposed:exposed-core:0.50.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.50.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.50.1")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.50.1")
+
+    // HikariCP (пул соединений)
+    implementation("com.zaxxer:HikariCP:5.1.0")
+
+    //cors
+    implementation("io.ktor:ktor-server-cors-jvm:3.0.0")
+    //log
+    // Source: https://mvnrepository.com/artifact/io.ktor/ktor-server-call-logging-jvm
+    implementation("io.ktor:ktor-server-call-logging-jvm:3.0.0")
+    implementation("ch.qos.logback:logback-classic:1.5.6")
 }
 
 tasks.test {
@@ -29,5 +49,5 @@ kotlin {
     jvmToolchain(22)
 }
 application {
-    mainClass.set("org.example.MainKt")
+    mainClass.set("org.example.ApplicationKt")
 }
