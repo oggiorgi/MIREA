@@ -86,4 +86,8 @@ dependencies {
 
     //icons
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
+    //
+    implementation("androidx.compose.runtime:runtime:1.6.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
+    implementation("androidx.compose.runtime:runtime-rxjava2:1.6.0")
 }
