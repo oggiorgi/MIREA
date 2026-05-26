@@ -1,5 +1,12 @@
 package com.example.museflow.presentation.ui.player
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Surface
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -9,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Track
 
 @Composable
@@ -46,6 +53,37 @@ fun PlayerScreen(
         }
     }
 
+    PlayerScreenContent(
+        track = track,
+        isPlaying = exoPlayer.isPlaying,
+        onPlayPause = {
+            if (exoPlayer.isPlaying) exoPlayer.pause()
+            else exoPlayer.play()
+        },
+        onNext = onNext,
+        onPrevious = onPrevious,
+        onBack = onBack,
+        playerView = {
+            AndroidView(
+                factory = { PlayerView(context).apply { player = exoPlayer } },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            )
+        }
+    )
+}
+
+@Composable
+private fun PlayerScreenContent(
+    track: Track,
+    isPlaying: Boolean,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onBack: () -> Unit,
+    playerView: @Composable () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +98,7 @@ fun PlayerScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             androidx.compose.foundation.Image(
-                painter = coil.compose.rememberAsyncImagePainter(model = track.coverUrl),
+                painter = rememberAsyncImagePainter(model = track.coverUrl),
                 contentDescription = "Cover",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
@@ -85,12 +123,7 @@ fun PlayerScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        AndroidView(
-            factory = { PlayerView(context).apply { player = exoPlayer } },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-        )
+        playerView()
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -99,33 +132,22 @@ fun PlayerScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = onPrevious,
-                enabled = exoPlayer.hasPreviousMediaItem()
-            ) {
+            IconButton(onClick = onPrevious) {
                 Icon(Icons.Default.SkipPrevious, contentDescription = "Previous")
             }
 
             Spacer(modifier = Modifier.width(32.dp))
 
-            IconButton(
-                onClick = {
-                    if (exoPlayer.isPlaying) exoPlayer.pause()
-                    else exoPlayer.play()
-                }
-            ) {
+            IconButton(onClick = onPlayPause) {
                 Icon(
-                    if (exoPlayer.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (exoPlayer.isPlaying) "Pause" else "Play"
+                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play"
                 )
             }
 
             Spacer(modifier = Modifier.width(32.dp))
 
-            IconButton(
-                onClick = onNext,
-                enabled = exoPlayer.hasNextMediaItem()
-            ) {
+            IconButton(onClick = onNext) {
                 Icon(Icons.Default.SkipNext, contentDescription = "Next")
             }
         }
@@ -134,6 +156,59 @@ fun PlayerScreen(
 
         TextButton(onClick = onBack) {
             Text("Назад")
+        }
+    }
+}
+
+// Preview для PlayerScreen (без ExoPlayer)
+@Preview(showBackground = true, name = "Player Screen Preview")
+@Composable
+fun PlayerScreenPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            PlayerScreenContent(
+                track = Track(
+                    id = 1,
+                    title = "Bohemian Rhapsody",
+                    artist = "Queen",
+                    duration = 354,
+                    coverUrl = "https://picsum.photos/id/100/300",
+                    audioUrl = "https://example.com/audio.mp3",
+                    genre = "Rock"
+                ),
+                isPlaying = false,
+                onPlayPause = {},
+                onNext = {},
+                onPrevious = {},
+                onBack = {},
+                playerView = {
+                    // В preview показываем заглушку вместо ExoPlayer
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "🎵 Аудиоплеер",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }

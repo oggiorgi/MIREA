@@ -11,9 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.museflow.domain.models.Playlist
+import com.example.museflow.domain.models.Track
 
 @Composable
 fun PlaylistsScreen(
@@ -27,8 +29,7 @@ fun PlaylistsScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showCreateDialog = true },
-                enabled = !isCreating
+                onClick = { if (!isCreating) showCreateDialog = true }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Создать плейлист")
             }
@@ -164,4 +165,173 @@ fun CreatePlaylistDialog(
             }
         }
     )
+}
+
+// ==================== PREVIEWS ====================
+
+// Preview для элемента плейлиста
+@Preview(showBackground = true, name = "Playlist Item Preview")
+@Composable
+fun PlaylistItemPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            PlaylistItem(
+                playlist = Playlist(
+                    id = 1,
+                    name = "Мои любимые треки",
+                    coverUrl = null,
+                    tracks = List(5) { index ->
+                        Track(
+                            id = index,
+                            title = "Трек $index",
+                            artist = "Исполнитель $index",
+                            duration = 180 + index * 10,
+                            coverUrl = "",
+                            audioUrl = "",
+                            genre = "Rock"
+                        )
+                    }
+                ),
+                onClick = {},
+                onDelete = {}
+            )
+        }
+    }
+}
+
+// Preview для списка плейлистов (Success состояние)
+@Preview(showBackground = true, name = "Playlists Screen Success Preview")
+@Composable
+fun PlaylistsScreenSuccessPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val samplePlaylists = listOf(
+                Playlist(
+                    id = 1,
+                    name = "Rock Classics",
+                    coverUrl = null,
+                    tracks = List(8) { index ->
+                        Track(
+                            id = index,
+                            title = "Rock Track $index",
+                            artist = "Rock Band",
+                            duration = 200,
+                            coverUrl = "",
+                            audioUrl = "",
+                            genre = "Rock"
+                        )
+                    }
+                ),
+                Playlist(
+                    id = 2,
+                    name = "Pop Hits",
+                    coverUrl = null,
+                    tracks = List(12) { index ->
+                        Track(
+                            id = index,
+                            title = "Pop Track $index",
+                            artist = "Pop Star",
+                            duration = 210,
+                            coverUrl = "",
+                            audioUrl = "",
+                            genre = "Pop"
+                        )
+                    }
+                ),
+                Playlist(
+                    id = 3,
+                    name = "Шансон",
+                    coverUrl = null,
+                    tracks = List(3) { index ->
+                        Track(
+                            id = index,
+                            title = "Шарик",
+                            artist = "Бутырка",
+                            duration = 180,
+                            coverUrl = "",
+                            audioUrl = "",
+                            genre = "Шансон"
+                        )
+                    }
+                )
+            )
+
+            LazyColumn {
+                items(samplePlaylists) { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        onClick = {},
+                        onDelete = {}
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Preview для пустого состояния
+@Preview(showBackground = true, name = "Empty Playlists Preview")
+@Composable
+fun EmptyPlaylistsPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Нет плейлистов")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = {}) {
+                        Text("Создать первый плейлист")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Preview для состояния загрузки
+@Preview(showBackground = true, name = "Loading State Preview")
+@Composable
+fun PlaylistsLoadingPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+}
+
+// Preview для диалога создания плейлиста
+@Preview(showBackground = true, name = "Create Playlist Dialog Preview")
+@Composable
+fun CreatePlaylistDialogPreview() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            CreatePlaylistDialog(
+                onDismiss = {},
+                onCreate = {}
+            )
+        }
+    }
 }
