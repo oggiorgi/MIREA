@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -89,7 +90,14 @@ class MainActivity : ComponentActivity() {
                                 currentTrack = track
                                 playlistTracks = tracks
                                 navController.navigate("player/${track.id}")
-                            }
+                            },
+                            getTracksUseCase = getTracksUseCase,
+                            searchTracksUseCase = searchTracksUseCase,
+                            getPlaylistsUseCase = getPlaylistsUseCase,
+                            createPlaylistUseCase = createPlaylistUseCase,
+                            deletePlaylistUseCase = deletePlaylistUseCase,
+                            addTrackToPlaylistUseCase = addTrackToPlaylistUseCase,
+                            coroutineScope = rememberCoroutineScope()
                         )
                     }
                     composable("player/{trackId}") { backStackEntry ->

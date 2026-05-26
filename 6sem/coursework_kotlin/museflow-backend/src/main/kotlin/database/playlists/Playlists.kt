@@ -23,6 +23,15 @@ object Playlists : Table("playlists") {
     }
 
     fun create(userId: Int, name: String, coverUrl: String? = null): PlaylistDTO? = transaction {
+        // Проверяем, существует ли уже плейлист с таким именем у этого пользователя
+        val existingPlaylist = Playlists
+            .select { (Playlists.userId eq userId) and (Playlists.name eq name) }
+            .singleOrNull()
+
+        if (existingPlaylist != null) {
+            return@transaction null  // Плейлист с таким именем уже существует
+        }
+
         Playlists.insert {
             it[Playlists.userId] = userId
             it[Playlists.name] = name
@@ -81,7 +90,8 @@ object Playlists : Table("playlists") {
     }
 
     private fun getTracks(playlistId: Int): List<TrackDTO> = transaction {
-        (PlaylistTracks innerJoin Tracks)
+        PlaylistTracks
+            .leftJoin(Tracks, { PlaylistTracks.trackId }, { Tracks.id })
             .select { PlaylistTracks.playlistId eq playlistId }
             .orderBy(PlaylistTracks.orderIndex to SortOrder.ASC)
             .map { row ->
@@ -111,6 +121,18 @@ object PlaylistTracks : Table("playlist_tracks") {
     }
 
     fun addTrack(playlistId: Int, trackId: Int): Boolean = transaction {
+        // Проверяем, существует ли уже трек в плейлисте
+        val existing = PlaylistTracks
+            .select {
+                (PlaylistTracks.playlistId eq playlistId) and
+                        (PlaylistTracks.trackId eq trackId)
+            }
+            .singleOrNull()
+
+        if (existing != null) {
+            return@transaction false  // Трек уже есть в плейлисте
+        }
+
         val currentMaxOrder = PlaylistTracks
             .select { PlaylistTracks.playlistId eq playlistId }
             .count()

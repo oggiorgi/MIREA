@@ -8,6 +8,7 @@ import com.example.museflow.data.network.models.PlaylistDto
 import com.example.museflow.data.network.models.RegisterRequest
 import com.example.museflow.data.network.models.TrackDto
 import com.example.museflow.data.network.models.UpdatePlaylistRequest
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -36,7 +37,7 @@ interface ApiService {
     suspend fun deletePlaylist(@Path("id") id: Int): String
 
     @POST("/playlists/{id}/tracks")
-    suspend fun addTrackToPlaylist(@Path("id") playlistId: Int, @Body request: AddTrackRequest): String
+    suspend fun addTrackToPlaylist(@Path("id") playlistId: Int, @Body request: AddTrackRequest): Response<Unit>
 
     @DELETE("/playlists/{id}/tracks/{trackId}")
     suspend fun removeTrackFromPlaylist(@Path("id") playlistId: Int, @Path("trackId") trackId: Int): String

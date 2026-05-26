@@ -8,6 +8,7 @@ import com.example.museflow.data.network.models.UpdatePlaylistRequest
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.repository.PlaylistsRepository
 import kotlin.collections.map
+import retrofit2.HttpException
 
 class PlaylistsRepositoryImpl(
     private val api: ApiService
@@ -17,7 +18,15 @@ class PlaylistsRepositoryImpl(
     }
 
     override suspend fun createPlaylist(name: String, coverUrl: String?): Playlist {
-        return api.createPlaylist(CreatePlaylistRequest(name, coverUrl)).toDomain()
+        return try {
+            api.createPlaylist(CreatePlaylistRequest(name, coverUrl)).toDomain()
+        } catch (e: HttpException) {
+            if (e.code() == 409) {
+                throw Exception("Плейлист с таким именем уже существует")
+            } else {
+                throw e
+            }
+        }
     }
 
     override suspend fun updatePlaylist(playlistId: Int, newName: String) {
@@ -28,8 +37,17 @@ class PlaylistsRepositoryImpl(
         api.deletePlaylist(playlistId)
     }
 
-    override suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int) {
-        api.addTrackToPlaylist(playlistId, AddTrackRequest(trackId))
+    override suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int): Boolean {
+        return try {
+            val response = api.addTrackToPlaylist(playlistId, AddTrackRequest(trackId))
+            response.isSuccessful
+        } catch (e: HttpException) {
+            if (e.code() == 409) {
+                false  // Трек уже в плейлисте
+            } else {
+                throw e
+            }
+        }
     }
 
     override suspend fun removeTrackFromPlaylist(playlistId: Int, trackId: Int) {

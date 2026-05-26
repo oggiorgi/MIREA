@@ -29,7 +29,7 @@ fun Application.configurePlaylistsRouting() {
                 if (playlist != null) {
                     call.respond(HttpStatusCode.Created, playlist)
                 } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to create playlist")
+                    call.respond(HttpStatusCode.Conflict, mapOf("message" to "Playlist with this name already exists"))
                 }
             }
 
@@ -65,15 +65,15 @@ fun Application.configurePlaylistsRouting() {
             post("/playlists/{id}/tracks") {
                 val playlistId = call.parameters["id"]?.toIntOrNull()
                 if (playlistId == null) {
-                    call.respond(HttpStatusCode.BadRequest, "Invalid playlist ID")
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid playlist ID"))
                     return@post
                 }
                 val request = call.receive<AddTrackRequest>()
                 val added = PlaylistTracks.addTrack(playlistId, request.trackId)
                 if (added) {
-                    call.respond(HttpStatusCode.OK, "Track added")
+                    call.respond(mapOf("message" to "Track added"))
                 } else {
-                    call.respond(HttpStatusCode.Conflict, "Track already in playlist")
+                    call.respond(HttpStatusCode.Conflict, mapOf("message" to "Track already in playlist"))
                 }
             }
 

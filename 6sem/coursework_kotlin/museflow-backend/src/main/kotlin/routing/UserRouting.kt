@@ -7,7 +7,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.example.database.users.Users
-import org.example.features.playlists.getUserIdFromToken
+import org.example.utils.getUserIdFromToken
 
 fun Application.configureUserRouting() {
     routing {

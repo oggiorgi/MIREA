@@ -20,7 +20,7 @@ import com.example.museflow.domain.models.Track
 @Composable
 fun PlaylistsScreen(
     onPlaylistClick: (Playlist) -> Unit,
-    viewModel: PlaylistsViewModel = viewModel()
+    viewModel: PlaylistsViewModel
 ) {
     val state by viewModel.state.collectAsState()
     val isCreating by viewModel.isCreating.collectAsState()

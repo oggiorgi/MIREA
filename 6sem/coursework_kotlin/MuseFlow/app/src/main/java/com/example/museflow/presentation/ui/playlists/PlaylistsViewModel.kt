@@ -49,7 +49,7 @@ class PlaylistsViewModel(
             _isCreating.value = true
             try {
                 createPlaylistUseCase(name, coverUrl)
-                loadPlaylists() // Перезагружаем список
+                loadPlaylists()
             } catch (e: Exception) {
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка создания плейлиста")
             } finally {

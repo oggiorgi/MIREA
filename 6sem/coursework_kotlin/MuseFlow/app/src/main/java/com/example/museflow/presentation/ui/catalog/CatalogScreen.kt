@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
@@ -29,7 +28,7 @@ fun CatalogScreen(
     onTrackClick: (Track) -> Unit,
     playlists: List<Playlist> = emptyList(),
     onAddToPlaylist: (Int, Int) -> Unit,
-    viewModel: CatalogViewModel = viewModel()
+    viewModel: CatalogViewModel
 ) {
     val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }

@@ -1,8 +1,9 @@
 package org.example.database.playlists
 
+import kotlinx.serialization.Serializable
 import org.example.database.tracks.TrackDTO
-import java.time.LocalDateTime
 
+@Serializable
 data class PlaylistDTO(
     val id: Int,
     val userId: Int,

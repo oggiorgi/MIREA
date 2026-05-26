@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import org.example.database.tokens.TokenDTO
 import org.example.database.users.Users
 import org.example.utils.PasswordHasher
 import org.example.utils.isValidateEmail
