@@ -22,7 +22,7 @@ class PlaylistsRepositoryImpl(
             api.createPlaylist(CreatePlaylistRequest(name, coverUrl)).toDomain()
         } catch (e: HttpException) {
             if (e.code() == 409) {
-                throw Exception("Плейлист с таким именем уже существует")
+                throw Exception("Плейлист с таким именем уже создан")
             } else {
                 throw e
             }
