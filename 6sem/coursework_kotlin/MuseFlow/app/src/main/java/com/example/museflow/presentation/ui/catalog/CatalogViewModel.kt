@@ -43,6 +43,9 @@ class CatalogViewModel @Inject constructor(
             }
         }
     }
+    fun getTracksByGenre(): Map<String, List<Track>> {
+        return allTracks.groupBy { it.genre ?: "Другое" }
+    }
 
     fun search(query: String) {
         if (query.isBlank()) {

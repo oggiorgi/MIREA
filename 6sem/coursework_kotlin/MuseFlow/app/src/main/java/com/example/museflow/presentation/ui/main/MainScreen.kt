@@ -1,20 +1,22 @@
 package com.example.museflow.presentation.ui.main
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.museflow.data.network.auth.TokenManager
 import com.example.museflow.domain.models.Track
@@ -32,7 +34,9 @@ fun MainScreen(
     coroutineScope: CoroutineScope,
     tokenManager: TokenManager,
     onLogout: () -> Unit,
-    onClearCache: () -> Unit  // ← добавить параметр
+    onClearCache: () -> Unit,
+    isDarkTheme: Boolean,
+    onThemeToggle: () -> Unit
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -50,23 +54,42 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             NavigationBar {
+                // Текущий маршрут для подсветки
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
                 NavigationBarItem(
-                    selected = false,
+                    selected = currentRoute == "catalog",
                     onClick = { navController.navigate("catalog") },
                     label = { Text("Каталог") },
-                    icon = { Icon(Icons.Default.MusicNote, null) }
+                    icon = { Icon(Icons.Default.MusicNote, null) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    )
                 )
                 NavigationBarItem(
-                    selected = false,
+                    selected = currentRoute == "playlists",
                     onClick = { navController.navigate("playlists") },
                     label = { Text("Плейлисты") },
-                    icon = { Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null) }
+                    icon = { Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    )
                 )
                 NavigationBarItem(
-                    selected = false,
+                    selected = currentRoute == "profile",
                     onClick = { navController.navigate("profile") },
                     label = { Text("Профиль") },
-                    icon = { Icon(Icons.Default.Person, null) }
+                    icon = { Icon(Icons.Default.Person, null) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    )
                 )
             }
         }
@@ -80,6 +103,9 @@ fun MainScreen(
                 CatalogScreen(
                     onTrackClick = { track ->
                         onNavigateToPlayer(track, listOf(track))
+                    },
+                    onGenreClick = { genre ->
+                        navController.navigate("genre/$genre")
                     },
                     playlists = playlists,
                     onAddToPlaylist = { playlistId, trackId ->
@@ -126,7 +152,9 @@ fun MainScreen(
                 ProfileScreen(
                     tokenManager = tokenManager,
                     onLogout = onLogout,
-                    onClearCache = onClearCache  // ← передать параметр
+                    onClearCache = onClearCache,
+                    isDarkTheme = isDarkTheme,
+                    onThemeToggle = onThemeToggle
                 )
             }
         }
