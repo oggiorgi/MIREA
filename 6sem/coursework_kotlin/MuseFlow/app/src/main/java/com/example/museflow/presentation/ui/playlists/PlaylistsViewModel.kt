@@ -3,13 +3,16 @@ package com.example.museflow.presentation.ui.playlists
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.museflow.domain.models.Playlist
+import com.example.museflow.domain.usecase.AddTrackToPlaylistUseCase
 import com.example.museflow.domain.usecase.CreatePlaylistUseCase
 import com.example.museflow.domain.usecase.DeletePlaylistUseCase
 import com.example.museflow.domain.usecase.GetPlaylistsUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class PlaylistsState {
     object Loading : PlaylistsState()
@@ -17,10 +20,12 @@ sealed class PlaylistsState {
     data class Error(val message: String) : PlaylistsState()
 }
 
-class PlaylistsViewModel(
+@HiltViewModel
+class PlaylistsViewModel @Inject constructor(
     private val getPlaylistsUseCase: GetPlaylistsUseCase,
     private val createPlaylistUseCase: CreatePlaylistUseCase,
-    private val deletePlaylistUseCase: DeletePlaylistUseCase
+    private val deletePlaylistUseCase: DeletePlaylistUseCase,
+    private val addTrackToPlaylistUseCase: AddTrackToPlaylistUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow<PlaylistsState>(PlaylistsState.Loading)
     val state: StateFlow<PlaylistsState> = _state.asStateFlow()
@@ -67,5 +72,9 @@ class PlaylistsViewModel(
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления плейлиста")
             }
         }
+    }
+
+    suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int): Boolean {
+        return addTrackToPlaylistUseCase(playlistId, trackId)
     }
 }

@@ -25,15 +25,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.museflow.domain.repository.AuthRepository
 import com.example.museflow.domain.usecase.LoginUseCase
 import com.example.museflow.domain.usecase.RegisterUseCase
 
 @Composable
 fun AuthScreen(
-    authViewModel: AuthViewModel,
     onSuccess: (String) -> Unit
 ) {
+    val authViewModel: AuthViewModel = hiltViewModel()
+
     var isLoginMode by remember { mutableStateOf(true) }
     var login by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }

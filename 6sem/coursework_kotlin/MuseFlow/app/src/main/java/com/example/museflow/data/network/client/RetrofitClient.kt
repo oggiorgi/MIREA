@@ -1,5 +1,6 @@
 package com.example.museflow.data.network.client
 
+import android.content.Context
 import com.example.museflow.data.network.api.ApiService
 import com.example.museflow.data.network.auth.TokenManager
 import okhttp3.Interceptor
@@ -10,9 +11,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:8080/"   // для эмулятора
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
-    fun provideApiService(tokenManager: TokenManager): ApiService {
+    fun provideApiService(tokenManager: TokenManager, context: Context): ApiService {
         val authInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
             tokenManager.getToken()?.let { token ->

@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.museflow.domain.models.Track
 import com.example.museflow.domain.usecase.GetTracksUseCase
 import com.example.museflow.domain.usecase.SearchTracksUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class CatalogState {
     object Loading : CatalogState()
@@ -16,7 +18,8 @@ sealed class CatalogState {
     data class Error(val message: String) : CatalogState()
 }
 
-class CatalogViewModel(
+@HiltViewModel
+class CatalogViewModel @Inject constructor(
     private val getTracksUseCase: GetTracksUseCase,
     private val searchTracksUseCase: SearchTracksUseCase
 ) : ViewModel() {
