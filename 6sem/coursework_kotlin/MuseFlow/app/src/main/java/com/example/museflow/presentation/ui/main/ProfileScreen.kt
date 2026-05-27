@@ -11,7 +11,8 @@ import com.example.museflow.data.network.auth.TokenManager
 @Composable
 fun ProfileScreen(
     tokenManager: TokenManager,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onClearCache: () -> Unit
 ) {
     val token = tokenManager.getToken()
     val isLoggedIn = token != null && token.isNotEmpty()
@@ -54,6 +55,18 @@ fun ProfileScreen(
                     )
                 ) {
                     Text("Выйти из аккаунта")
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onClearCache,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Text("Очистить кэш")
                 }
             }
         }

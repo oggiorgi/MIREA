@@ -1,5 +1,6 @@
 package com.example.museflow.di
 
+import com.example.museflow.data.local.dao.TrackDao
 import com.example.museflow.data.repository.AuthRepositoryImpl
 import com.example.museflow.data.repository.PlaylistsRepositoryImpl
 import com.example.museflow.data.repository.TracksRepositoryImpl
@@ -29,8 +30,11 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideTracksRepository(api: ApiService): TracksRepository {
-        return TracksRepositoryImpl(api)
+    fun provideTracksRepository(
+        api: ApiService,
+        trackDao: TrackDao
+    ): TracksRepository {
+        return TracksRepositoryImpl(api, trackDao)
     }
 
     @Provides

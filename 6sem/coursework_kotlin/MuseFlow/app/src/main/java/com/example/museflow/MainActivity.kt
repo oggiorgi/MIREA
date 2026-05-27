@@ -1,6 +1,7 @@
 package com.example.museflow
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.museflow.data.network.auth.TokenManager
+import com.example.museflow.domain.repository.TracksRepository
 import com.example.museflow.domain.models.Track
 import com.example.museflow.presentation.ui.auth.AuthScreen
 import com.example.museflow.presentation.ui.main.MainScreen
@@ -18,12 +20,16 @@ import com.example.museflow.presentation.ui.player.PlayerScreen
 import com.example.museflow.ui.theme.MuseFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var tokenManager: TokenManager
+
+    @Inject
+    lateinit var tracksRepository: TracksRepository  // ← внедряем через Hilt
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +40,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
 
-                // Проверяем наличие сохранённого токена при запуске
                 val savedToken = remember { tokenManager.getToken() }
                 var isAuthenticated by remember {
                     mutableStateOf(savedToken != null && savedToken!!.isNotEmpty())
@@ -71,6 +76,16 @@ class MainActivity : ComponentActivity() {
                                 isAuthenticated = false
                                 navController.navigate("auth") {
                                     popUpTo("main") { inclusive = true }
+                                }
+                            },
+                            onClearCache = {
+                                coroutineScope.launch {
+                                    tracksRepository.clearCache()
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "Кэш очищен",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         )

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +31,8 @@ fun MainScreen(
     onNavigateToPlayer: (Track, List<Track>) -> Unit,
     coroutineScope: CoroutineScope,
     tokenManager: TokenManager,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onClearCache: () -> Unit  // ← добавить параметр
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -125,7 +125,8 @@ fun MainScreen(
             composable("profile") {
                 ProfileScreen(
                     tokenManager = tokenManager,
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onClearCache = onClearCache  // ← передать параметр
                 )
             }
         }

@@ -5,4 +5,5 @@ import com.example.museflow.domain.models.Track
 interface TracksRepository {
     suspend fun getTracks(): List<Track>
     suspend fun searchTracks(query: String): List<Track>
+    suspend fun clearCache()
 }
