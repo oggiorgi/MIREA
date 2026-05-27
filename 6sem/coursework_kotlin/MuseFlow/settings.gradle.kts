@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "MuseFlow"
 include(":app")
- 
