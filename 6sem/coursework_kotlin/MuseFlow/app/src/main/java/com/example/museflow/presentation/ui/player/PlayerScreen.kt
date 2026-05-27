@@ -160,7 +160,7 @@ private fun PlayerScreenContent(
     }
 }
 
-// Preview для PlayerScreen (без ExoPlayer)
+// Preview для PlayerScreen(без ExoPlayer)
 @Preview(showBackground = true, name = "Player Screen Preview")
 @Composable
 fun PlayerScreenPreview() {
