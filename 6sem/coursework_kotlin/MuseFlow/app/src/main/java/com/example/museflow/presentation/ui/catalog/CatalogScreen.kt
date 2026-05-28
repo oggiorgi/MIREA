@@ -38,6 +38,8 @@ import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 // Класс для управления историей поиска
 class SearchHistoryManager(context: Context) {
@@ -86,7 +88,7 @@ fun CatalogScreen(
     var showAddDialog by remember { mutableStateOf(false) }
 
     // История поиска
-    val searchHistory = remember { searchHistoryManager.getHistory() }
+    var searchHistory by remember { mutableStateOf(searchHistoryManager.getHistory()) }
 
     // Получаем текущий список треков из состояния
     val currentTracks = when (state) {
@@ -138,6 +140,9 @@ fun CatalogScreen(
             }
         )
 
+        // История поиска (переменная состояния)
+        var searchHistory by remember { mutableStateOf(searchHistoryManager.getHistory()) }
+
         // История поиска (показывается при фокусе на пустом поле)
         if (showHistory && searchHistory.isNotEmpty()) {
             Card(
@@ -161,9 +166,10 @@ fun CatalogScreen(
                         )
                         TextButton(onClick = {
                             searchHistoryManager.clearHistory()
+                            searchHistory = searchHistoryManager.getHistory()
                             showHistory = false
                         }) {
-                            Text("Очистить", color = MaterialTheme.colorScheme.error)
+                            Text("Очистить всё", color = MaterialTheme.colorScheme.error)
                         }
                     }
 
@@ -171,24 +177,56 @@ fun CatalogScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    searchQuery = query
-                                    searchHistoryManager.addQuery(query)  // ← ДОБАВИТЬ ЭТУ СТРОКУ
-                                    viewModel.search(query)
-                                    keyboardController?.hide()
-                                    showHistory = false
-                                }
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Иконка истории
                             Icon(
                                 Icons.Default.History,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
                                 tint = Color.Gray
                             )
+
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = query)
+
+                            // Текст запроса (кликабельный)
+                            Text(
+                                text = query,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        searchQuery = query
+                                        searchHistoryManager.addQuery(query)
+                                        searchHistory = searchHistoryManager.getHistory()
+                                        viewModel.search(query)
+                                        keyboardController?.hide()
+                                        showHistory = false
+                                    },
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            // КНОПКА УДАЛЕНИЯ ОДНОГО ЗАПРОСА (крестик)
+                            IconButton(
+                                onClick = {
+                                    val currentHistory = searchHistory.toMutableList()
+                                    currentHistory.remove(query)
+                                    val gson = Gson()
+                                    val json = gson.toJson(currentHistory)
+                                    val prefs = context.getSharedPreferences("search_history", Context.MODE_PRIVATE)
+                                    prefs.edit().putString("history", json).apply()
+                                    searchHistory = searchHistoryManager.getHistory()
+                                    showHistory = searchHistory.isNotEmpty()
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = "Удалить из истории",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color.Gray
+                                )
+                            }
                         }
                         Divider(modifier = Modifier.padding(start = 48.dp))
                     }
@@ -323,7 +361,7 @@ fun DailyPlaylistSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            text = "🎧 Треки дня",
+            text = "Треки дня",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
