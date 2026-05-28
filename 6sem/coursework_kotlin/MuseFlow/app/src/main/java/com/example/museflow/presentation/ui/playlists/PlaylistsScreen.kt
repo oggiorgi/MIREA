@@ -26,6 +26,10 @@ fun PlaylistsScreen(
     val isCreating by viewModel.isCreating.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadPlaylists()
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -120,8 +124,9 @@ fun PlaylistItem(
                     text = playlist.name,
                     style = MaterialTheme.typography.titleMedium
                 )
+                val trackCount = remember(playlist.tracks.size) { playlist.tracks.size }
                 Text(
-                    text = "${playlist.tracks.size} треков",
+                    text = "$trackCount ${getTracksText(trackCount)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

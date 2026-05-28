@@ -7,36 +7,56 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.example.museflow.presentation.ui.catalog.formatDuration
-import com.example.museflow.ui.theme.MuseFlowTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailScreen(
     playlist: Playlist,
+    viewModel: PlaylistsViewModel,
     onTrackClick: (Track) -> Unit,
-    onRemoveTrack: (Int) -> Unit,
     onBack: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
+    // ✅ Убираем remember(playlist) - пусть tracks всегда берется из state
+    var tracks by remember { mutableStateOf(playlist.tracks) }
+
+    // ✅ Подписываемся на обновления из ViewModel
+    val state by viewModel.state.collectAsState()
+
+    // ✅ Обновляем tracks при каждом изменении state
+    LaunchedEffect(state) {
+        if (state is PlaylistsState.Success) {
+            val updatedPlaylist = (state as PlaylistsState.Success).playlists.find { it.id == playlist.id }
+            if (updatedPlaylist != null) {
+                tracks = updatedPlaylist.tracks
+            }
+        }
+    }
+
+    // ✅ Также обновляем при изменении самого playlist (на случай, если он придет обновленный)
+    LaunchedEffect(playlist) {
+        tracks = playlist.tracks
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,7 +67,7 @@ fun PlaylistDetailScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${playlist.tracks.size} треков",
+                            text = "${tracks.size} ${getTracksText(tracks.size)}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -64,7 +84,7 @@ fun PlaylistDetailScreen(
             )
         }
     ) { paddingValues ->
-        if (playlist.tracks.isEmpty()) {
+        if (tracks.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -99,18 +119,23 @@ fun PlaylistDetailScreen(
                     .padding(paddingValues),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(playlist.tracks, key = { it.id }) { track ->
+                items(tracks, key = { it.id }) { track ->
                     PlaylistTrackItem(
                         track = track,
                         onClick = { onTrackClick(track) },
-                        onRemove = { onRemoveTrack(track.id) }
+                        onRemove = {
+                            // ✅ Оптимистичное обновление
+                            tracks = tracks.filter { it.id != track.id }
+                            coroutineScope.launch {
+                                viewModel.removeTrackFromPlaylist(playlist.id, track.id)
+                            }
+                        }
                     )
                 }
             }
         }
     }
 }
-
 @Composable
 fun PlaylistTrackItem(
     track: Track,
@@ -182,169 +207,10 @@ fun PlaylistTrackItem(
     }
 }
 
-// ==================== PREVIEWS ====================
-
-
-// Preview карточки трека в светлой теме
-@Preview(showBackground = true, name = "Playlist Track Item - Light")
-@Composable
-fun PlaylistTrackItemLightPreview() {
-    MuseFlowTheme(darkTheme = false) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            PlaylistTrackItem(
-                track = Track(
-                    id = 1,
-                    title = "Bohemian Rhapsody",
-                    artist = "Queen",
-                    duration = 354,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                onClick = {},
-                onRemove = {}
-            )
-        }
-    }
-}
-
-// Preview карточки трека в тёмной теме (здесь должны быть тёмные карточки)
-@Preview(showBackground = true, name = "Playlist Track Item - Dark")
-@Composable
-fun PlaylistTrackItemDarkPreview() {
-    MuseFlowTheme(darkTheme = true) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            PlaylistTrackItem(
-                track = Track(
-                    id = 1,
-                    title = "Bohemian Rhapsody",
-                    artist = "Queen",
-                    duration = 354,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                onClick = {},
-                onRemove = {}
-            )
-        }
-    }
-}
-
-// Preview списка треков в плейлисте (светлая тема)
-@Preview(showBackground = true, name = "Playlist Detail Screen - Light")
-@Composable
-fun PlaylistDetailScreenLightPreview() {
-    MuseFlowTheme(darkTheme = false) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            val sampleTracks = listOf(
-                Track(
-                    id = 1,
-                    title = "Bohemian Rhapsody",
-                    artist = "Queen",
-                    duration = 354,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                Track(
-                    id = 2,
-                    title = "Stairway to Heaven",
-                    artist = "Led Zeppelin",
-                    duration = 482,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                Track(
-                    id = 3,
-                    title = "Hey Jude",
-                    artist = "The Beatles",
-                    duration = 431,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                )
-            )
-
-            PlaylistDetailScreen(
-                playlist = Playlist(
-                    id = 1,
-                    name = "Rock Classics",
-                    coverUrl = null,
-                    tracks = sampleTracks
-                ),
-                onTrackClick = {},
-                onRemoveTrack = {},
-                onBack = {}
-            )
-        }
-    }
-}
-
-// Preview списка треков в плейлисте (тёмная тема)
-@Preview(showBackground = true, name = "Playlist Detail Screen - Dark")
-@Composable
-fun PlaylistDetailScreenDarkPreview() {
-    MuseFlowTheme(darkTheme = true) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            val sampleTracks = listOf(
-                Track(
-                    id = 1,
-                    title = "Bohemian Rhapsody",
-                    artist = "Queen",
-                    duration = 354,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                Track(
-                    id = 2,
-                    title = "Stairway to Heaven",
-                    artist = "Led Zeppelin",
-                    duration = 482,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                ),
-                Track(
-                    id = 3,
-                    title = "Hey Jude",
-                    artist = "The Beatles",
-                    duration = 431,
-                    coverUrl = "https://picsum.photos/id/100/200",
-                    audioUrl = "",
-                    genre = "Rock"
-                )
-            )
-
-            PlaylistDetailScreen(
-                playlist = Playlist(
-                    id = 1,
-                    name = "Rock Classics",
-                    coverUrl = null,
-                    tracks = sampleTracks
-                ),
-                onTrackClick = {},
-                onRemoveTrack = {},
-                onBack = {}
-            )
-        }
+fun getTracksText(count: Int): String {
+    return when {
+        count % 10 == 1 && count % 100 != 11 -> "трек"
+        count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "трека"
+        else -> "треков"
     }
 }

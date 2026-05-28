@@ -56,7 +56,7 @@ class PlaylistsViewModel @Inject constructor(
             _isCreating.value = true
             try {
                 createPlaylistUseCase(name, coverUrl)
-                loadPlaylists()
+                loadPlaylists()  // ← перезагружаем все плейлисты
             } catch (e: Exception) {
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка создания плейлиста")
             } finally {
@@ -69,25 +69,46 @@ class PlaylistsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 deletePlaylistUseCase(playlistId)
-                loadPlaylists()
+                loadPlaylists()  // ← перезагружаем все плейлисты
             } catch (e: Exception) {
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления плейлиста")
             }
         }
     }
-    // Добавьте этот метод в PlaylistsViewModel
+
     fun removeTrackFromPlaylist(playlistId: Int, trackId: Int) {
         viewModelScope.launch {
             try {
+                // 1. Сначала обновляем локальное состояние (оптимистичное обновление)
+                val currentState = _state.value
+                if (currentState is PlaylistsState.Success) {
+                    val updatedPlaylists = currentState.playlists.map { playlist ->
+                        if (playlist.id == playlistId) {
+                            playlist.copy(tracks = playlist.tracks.filter { it.id != trackId })
+                        } else {
+                            playlist
+                        }
+                    }
+                    _state.value = PlaylistsState.Success(updatedPlaylists)
+                }
+
+                // 2. Затем отправляем запрос на сервер
                 removeTrackFromPlaylistUseCase(playlistId, trackId)
-                loadPlaylists()  // Перезагружаем список после удаления
+
             } catch (e: Exception) {
+                // Если ошибка - возвращаем старые данные
+                loadPlaylists() // Откат при ошибке
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления трека")
             }
         }
     }
 
     suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int): Boolean {
-        return addTrackToPlaylistUseCase(playlistId, trackId)
+        val result = addTrackToPlaylistUseCase(playlistId, trackId)
+        if (result) {
+            // ✅ При добавлении тоже перезагружаем ВСЕ плейлисты
+            loadPlaylists()
+        }
+        return result
     }
 }

@@ -38,8 +38,6 @@ import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 
 // Класс для управления историей поиска
 class SearchHistoryManager(context: Context) {
@@ -80,17 +78,15 @@ fun CatalogScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchHistoryManager = remember { SearchHistoryManager(context) }
 
-    // Сохраняем поисковый запрос при повороте экрана
+    // Объявляем все переменные состояния
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchFocused by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
     var selectedTrackId by remember { mutableStateOf<Int?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
-
-    // История поиска
     var searchHistory by remember { mutableStateOf(searchHistoryManager.getHistory()) }
 
-    // Получаем текущий список треков из состояния
+    // Получаем текущий список треков
     val currentTracks = when (state) {
         is CatalogState.Success -> (state as CatalogState.Success).tracks
         else -> emptyList()
@@ -102,15 +98,25 @@ fun CatalogScreen(
         }
     }
 
+    // Обновляем историю при фокусе
+    LaunchedEffect(isSearchFocused, searchQuery) {
+        if (isSearchFocused && searchQuery.isEmpty()) {
+            searchHistory = searchHistoryManager.getHistory()
+            showHistory = searchHistory.isNotEmpty()
+        } else {
+            showHistory = false
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // Поле поиска с кнопкой очистки
+        // Поле поиска
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                viewModel.search(it)
-                if (it.isNotBlank()) {
-                    searchHistoryManager.addQuery(it)
+            onValueChange = { query ->
+                searchQuery = query
+                viewModel.search(query)
+                if (query.isNotBlank()) {
+                    searchHistoryManager.addQuery(query)
                     showHistory = false
                 }
             },
@@ -120,11 +126,6 @@ fun CatalogScreen(
                 .padding(16.dp)
                 .onFocusChanged { focusState ->
                     isSearchFocused = focusState.isFocused
-                    if (focusState.isFocused && searchQuery.isEmpty()) {
-                        showHistory = searchHistory.isNotEmpty()
-                    } else {
-                        showHistory = false
-                    }
                 },
             singleLine = true,
             trailingIcon = {
@@ -140,10 +141,7 @@ fun CatalogScreen(
             }
         )
 
-        // История поиска (переменная состояния)
-        var searchHistory by remember { mutableStateOf(searchHistoryManager.getHistory()) }
-
-        // История поиска (показывается при фокусе на пустом поле)
+        // История поиска
         if (showHistory && searchHistory.isNotEmpty()) {
             Card(
                 modifier = Modifier
@@ -180,7 +178,6 @@ fun CatalogScreen(
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Иконка истории
                             Icon(
                                 Icons.Default.History,
                                 contentDescription = null,
@@ -190,7 +187,6 @@ fun CatalogScreen(
 
                             Spacer(modifier = Modifier.width(12.dp))
 
-                            // Текст запроса (кликабельный)
                             Text(
                                 text = query,
                                 modifier = Modifier
@@ -206,7 +202,6 @@ fun CatalogScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
 
-                            // КНОПКА УДАЛЕНИЯ ОДНОГО ЗАПРОСА (крестик)
                             IconButton(
                                 onClick = {
                                     val currentHistory = searchHistory.toMutableList()
@@ -248,9 +243,9 @@ fun CatalogScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = {
                             if (searchQuery.isNotEmpty()) {
-                                viewModel.retryLastSearch()  // повторяем ПОИСК
+                                viewModel.retryLastSearch()
                             } else {
-                                viewModel.loadTracks()       // повторяем загрузку каталога
+                                viewModel.loadTracks()
                             }
                         }) {
                             Text("Обновить")
@@ -261,7 +256,6 @@ fun CatalogScreen(
             is CatalogState.Success -> {
                 val tracks = (state as CatalogState.Success).tracks
 
-                // Если есть поисковый запрос и результаты пусты
                 if (searchQuery.isNotEmpty() && tracks.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),

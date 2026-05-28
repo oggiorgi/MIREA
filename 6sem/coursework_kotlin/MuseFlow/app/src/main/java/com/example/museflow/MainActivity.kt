@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.museflow.data.network.auth.TokenManager
 import com.example.museflow.domain.models.Track
 import com.example.museflow.domain.repository.TracksRepository
@@ -34,6 +36,7 @@ import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
 import com.example.museflow.services.PlaybackService
 import com.example.museflow.ui.theme.MuseFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -114,6 +117,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateToPlaylist = { playlistId ->
                                 navController.navigate("playlist/$playlistId")
                             },
+                            onNavigateToGenre = { genre ->
+                                navController.navigate("genre/$genre")
+                            },
                             coroutineScope = coroutineScope,
                             tokenManager = tokenManager,
                             onLogout = {
@@ -138,37 +144,39 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // ✅ ПРАВИЛЬНОЕ МЕСТО ДЛЯ playlist - на том же уровне, что и main
-                    composable("playlist/{playlistId}") { backStackEntry ->
-                        val playlistId = backStackEntry.arguments?.getString("playlistId")?.toIntOrNull()
-                        val playlistsState by playlistsViewModel.state.collectAsState()
-                        val playlist = if (playlistsState is PlaylistsState.Success) {
-                            (playlistsState as PlaylistsState.Success).playlists.find { it.id == playlistId }
-                        } else null
+                    composable(
+                        route = "playlist/{playlistId}",
+                        arguments = listOf(navArgument("playlistId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val playlistId = backStackEntry.arguments?.getInt("playlistId")
 
-                        if (playlist != null) {
+                        val playlistsState by playlistsViewModel.state.collectAsState()
+
+                        val playlist = remember(playlistsState, playlistId) {
+                            if (playlistsState is PlaylistsState.Success && playlistId != null) {
+                                (playlistsState as PlaylistsState.Success).playlists.find { it.id == playlistId }
+                            } else null
+                        }
+
+                        LaunchedEffect(playlistId) {
+                            playlistsViewModel.loadPlaylists()
+                        }
+
+                        if (playlist != null && playlistId != null) {
                             PlaylistDetailScreen(
                                 playlist = playlist,
+                                viewModel = playlistsViewModel,
                                 onTrackClick = { track ->
                                     currentTrack = track
                                     playlistTracks = playlist.tracks
                                     navController.navigate("player/${track.id}")
                                 },
-                                onRemoveTrack = { trackId ->
-                                    coroutineScope.launch {
-                                        playlistsViewModel.removeTrackFromPlaylist(playlistId!!, trackId)
-                                        playlistsViewModel.loadPlaylists()
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            "Трек удалён из плейлиста",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
                                 onBack = { navController.popBackStack() }
                             )
-                        } else {
-                            navController.popBackStack()
+                        } else if (playlistsState !is PlaylistsState.Loading) {
+                            LaunchedEffect(Unit) {
+                                navController.popBackStack()
+                            }
                         }
                     }
 

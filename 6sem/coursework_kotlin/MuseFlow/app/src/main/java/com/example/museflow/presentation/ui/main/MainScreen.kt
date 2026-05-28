@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onNavigateToPlayer: (Track, List<Track>) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit,
+    onNavigateToGenre: (String) -> Unit,
     coroutineScope: CoroutineScope,
     tokenManager: TokenManager,
     onLogout: () -> Unit,
@@ -105,7 +106,7 @@ fun MainScreen(
                         onNavigateToPlayer(track, allTracks)  // ← передаём ВСЕ треки
                     },
                     onGenreClick = { genre ->
-                        navController.navigate("genre/$genre")
+                        onNavigateToGenre(genre)
                     },
                     playlists = playlists,
                     onAddToPlaylist = { playlistId, trackId ->
