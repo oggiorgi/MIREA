@@ -1,8 +1,10 @@
 package com.example.museflow.presentation.ui.player
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import androidx.annotation.OptIn
+import android.content.ServiceConnection
+import android.os.IBinder
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,21 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Track
 import com.example.museflow.services.PlaybackService
-import com.example.museflow.ui.theme.MuseFlowTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(UnstableApi::class)
 @Composable
 fun PlayerScreen(
     track: Track,
@@ -37,108 +34,90 @@ fun PlayerScreen(
     onPrevious: () -> Unit,
     onBack: () -> Unit
 ) {
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val mediaItems = if (playlistTracks.isNotEmpty()) {
-                playlistTracks.map { trackItem ->
-                    MediaItem.fromUri(Uri.parse(trackItem.audioUrl))
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var isPlaying by remember { mutableStateOf(false) }
+    var currentTrackTitle by remember { mutableStateOf(track.title) }
+    var currentTrackArtist by remember { mutableStateOf(track.artist) }
+    var currentCoverUrl by remember { mutableStateOf(track.coverUrl) }
+    var serviceBound by remember { mutableStateOf(false) }
+    var playbackService by remember { mutableStateOf<PlaybackService?>(null) }
+
+    // Подключение к сервису для получения состояния
+    val connection = remember {
+        object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val binder = service as PlaybackService.LocalBinder
+                playbackService = binder.getService()
+                serviceBound = true
+                // Начинаем обновлять состояние
+                scope.launch {
+                    while (serviceBound) {
+                        playbackService?.let {
+                            isPlaying = it.isPlaying()
+                            val currentTrack = it.getCurrentTrack()
+                            if (currentTrack != null) {
+                                currentTrackTitle = currentTrack.title
+                                currentTrackArtist = currentTrack.artist
+                                currentCoverUrl = currentTrack.coverUrl
+                            }
+                        }
+                        delay(500)
+                    }
                 }
-            } else {
-                listOf(MediaItem.fromUri(Uri.parse(track.audioUrl)))
             }
-            val startIndex = playlistTracks.indexOfFirst { it.id == track.id }.coerceAtLeast(0)
-            setMediaItems(mediaItems, startIndex, 0)
-            prepare()
-            play()
+            override fun onServiceDisconnected(name: ComponentName?) {
+                serviceBound = false
+                playbackService = null
+            }
         }
     }
 
-    // Запуск сервиса для фонового воспроизведения
+    // Запускаем сервис и подключаемся
     LaunchedEffect(Unit) {
-        val serviceIntent = Intent(context, PlaybackService::class.java)
-        context.startService(serviceIntent)
-
-        val startIntent = Intent(context, PlaybackService::class.java).apply {
+        val intent = Intent(context, PlaybackService::class.java).apply {
             putExtra("tracks", ArrayList(playlistTracks))
             putExtra("startIndex", playlistTracks.indexOfFirst { it.id == track.id }.coerceAtLeast(0))
         }
-        context.startService(startIntent)
-    }
-
-    // Состояния для UI
-    var isPlaying by remember { mutableStateOf(true) }
-    var currentPosition by remember { mutableStateOf(0L) }
-    var duration by remember { mutableStateOf(1L) }
-
-    // Обновляем позицию и длительность
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(500)
-            try {
-                currentPosition = exoPlayer.currentPosition
-                duration = exoPlayer.duration.coerceAtLeast(1)
-                isPlaying = exoPlayer.isPlaying
-            } catch (e: Exception) {
-                errorMessage = e.message
-            }
-        }
-    }
-
-    // Показываем ошибку если есть
-    if (errorMessage != null) {
-        Text(
-            text = "Ошибка воспроизведения: $errorMessage",
-            color = MaterialTheme.colorScheme.error
-        )
+        context.startService(intent)
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            exoPlayer.release()
+            context.unbindService(connection)
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    // Отправка команд в сервис
+    val sendCommand = { action: String ->
+        Intent(context, PlaybackService::class.java).apply {
+            this.action = action
+        }.also { context.startService(it) }
+    }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Кнопка "Назад"
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 IconButton(onClick = onBack) {
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Назад",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = MaterialTheme.colorScheme.primary)
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
-                modifier = Modifier
-                    .size(250.dp)
-                    .padding(16.dp),
+                modifier = Modifier.size(250.dp).padding(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = track.coverUrl),
+                    painter = rememberAsyncImagePainter(model = currentCoverUrl),
                     contentDescription = "Cover",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -146,89 +125,33 @@ fun PlayerScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = track.title,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
+            Text(text = currentTrackTitle, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(8.dp))
+            Text(text = currentTrackArtist, style = MaterialTheme.typography.titleMedium)
 
-            Text(
-                text = track.artist,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = formatTime(currentPosition),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = formatTime(duration),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Slider(
-                value = currentPosition.toFloat(),
-                onValueChange = { newPosition ->
-                    exoPlayer.seekTo(newPosition.toLong())
-                    currentPosition = newPosition.toLong()
-                },
-                valueRange = 0f..duration.toFloat(),
-                modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary
-                )
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onPrevious) {
-                    Icon(
-                        Icons.Default.SkipPrevious,
-                        contentDescription = "Previous",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                IconButton(onClick = {
+                    sendCommand(PlaybackService.ACTION_PREVIOUS)
+                    onPrevious()
+                }) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(48.dp))
                 }
 
                 Spacer(modifier = Modifier.width(32.dp))
 
                 Card(
                     shape = CircleShape,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier.size(72.dp)
                 ) {
                     IconButton(
-                        onClick = {
-                            if (exoPlayer.isPlaying) {
-                                exoPlayer.pause()
-                            } else {
-                                exoPlayer.play()
-                            }
-                        },
+                        onClick = { sendCommand(PlaybackService.ACTION_PLAY_PAUSE) },
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
@@ -242,63 +165,12 @@ fun PlayerScreen(
 
                 Spacer(modifier = Modifier.width(32.dp))
 
-                IconButton(onClick = onNext) {
-                    Icon(
-                        Icons.Default.SkipNext,
-                        contentDescription = "Next",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                IconButton(onClick = {
+                    sendCommand(PlaybackService.ACTION_NEXT)
+                    onNext()
+                }) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "Next", modifier = Modifier.size(48.dp))
                 }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-private fun formatTime(millis: Long): String {
-    val seconds = (millis / 1000).toInt()
-    val minutes = seconds / 60
-    val secs = seconds % 60
-    return String.format("%d:%02d", minutes, secs)
-}
-
-// ==================== PREVIEWS ====================
-
-@Preview(showBackground = true, name = "Player Screen - Light Theme")
-@Composable
-fun PlayerScreenLightPreview() {
-    MuseFlowTheme(darkTheme = false) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("Preview - Аудиоплеер")
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Player Screen - Dark Theme")
-@Composable
-fun PlayerScreenDarkPreview() {
-    MuseFlowTheme(darkTheme = true) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("Preview - Аудиоплеер")
             }
         }
     }

@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.OptIn
@@ -25,13 +26,13 @@ class PlaybackService : MediaSessionService() {
     private var player: ExoPlayer? = null
     private var currentTracks: List<Track> = emptyList()
     private var currentTrackIndex: Int = 0
-    private var serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var currentIsPlaying: Boolean = false
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
         const val CHANNEL_ID = "playback_channel"
         const val NOTIFICATION_ID = 1
-        const val ACTION_PLAY = "play"
-        const val ACTION_PAUSE = "pause"
+        const val ACTION_PLAY_PAUSE = "play_pause"
         const val ACTION_NEXT = "next"
         const val ACTION_PREVIOUS = "previous"
     }
@@ -41,25 +42,30 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         createNotificationChannel()
 
+        // Создаём плеер на главном потоке
         player = ExoPlayer.Builder(this).build().apply {
             addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
+                    currentIsPlaying = playbackState == Player.STATE_READY && isPlaying
                     updateNotification()
                 }
-
-                override fun onPositionDiscontinuity(reason: Int) {
+                override fun onIsPlayingChanged(playing: Boolean) {
+                    currentIsPlaying = playing
                     updateNotification()
                 }
             })
         }
-
         mediaSession = MediaSession.Builder(this, player!!).build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         when (intent?.action) {
-            ACTION_PLAY -> player?.play()
-            ACTION_PAUSE -> player?.pause()
+            ACTION_PLAY_PAUSE -> {
+                player?.let {
+                    if (it.isPlaying) it.pause() else it.play()
+                }
+            }
             ACTION_NEXT -> {
                 val nextIndex = currentTrackIndex + 1
                 if (nextIndex < currentTracks.size) {
@@ -76,15 +82,15 @@ class PlaybackService : MediaSessionService() {
                 @Suppress("UNCHECKED_CAST")
                 val tracksList = intent?.getSerializableExtra("tracks") as? ArrayList<Track>
                 val startIndex = intent?.getIntExtra("startIndex", 0) ?: 0
-                if (tracksList != null) {
+                if (tracksList != null && tracksList.isNotEmpty()) {
                     startPlayback(tracksList, startIndex)
                 }
             }
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
 
-    fun startPlayback(tracks: List<Track>, startIndex: Int = 0) {
+    private fun startPlayback(tracks: List<Track>, startIndex: Int = 0) {
         currentTracks = tracks
         currentTrackIndex = startIndex
         playTrackAtIndex(startIndex)
@@ -95,6 +101,7 @@ class PlaybackService : MediaSessionService() {
         if (index < 0 || index >= currentTracks.size) return
 
         currentTrackIndex = index
+        val playerInstance = player ?: return
 
         val mediaItems = currentTracks.map { trackItem ->
             MediaItem.Builder()
@@ -103,9 +110,9 @@ class PlaybackService : MediaSessionService() {
                 .build()
         }
 
-        player?.setMediaItems(mediaItems, index, 0)
-        player?.prepare()
-        player?.play()
+        playerInstance.setMediaItems(mediaItems, index, 0)
+        playerInstance.prepare()
+        playerInstance.play()
         updateNotification()
     }
 
@@ -114,11 +121,11 @@ class PlaybackService : MediaSessionService() {
             currentTracks[currentTrackIndex]
         } else null
 
-        val playIntent = Intent(this, PlaybackService::class.java).apply {
-            action = if (player?.isPlaying == true) ACTION_PAUSE else ACTION_PLAY
+        val playPauseIntent = Intent(this, PlaybackService::class.java).apply {
+            action = ACTION_PLAY_PAUSE
         }
-        val playPendingIntent = PendingIntent.getService(
-            this, 0, playIntent,
+        val playPausePendingIntent = PendingIntent.getService(
+            this, 0, playPauseIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -152,9 +159,9 @@ class PlaybackService : MediaSessionService() {
             .setContentIntent(openPendingIntent)
             .addAction(android.R.drawable.ic_media_previous, "Previous", prevPendingIntent)
             .addAction(
-                if (player?.isPlaying == true) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
-                if (player?.isPlaying == true) "Pause" else "Play",
-                playPendingIntent
+                if (currentIsPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
+                if (currentIsPlaying) "Pause" else "Play",
+                playPausePendingIntent
             )
             .addAction(android.R.drawable.ic_media_next, "Next", nextPendingIntent)
             .build()
@@ -181,6 +188,21 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
+    inner class LocalBinder : Binder() {
+        fun getService(): PlaybackService = this@PlaybackService
+    }
+
+    fun isPlaying(): Boolean = player?.isPlaying ?: false
+
+    fun getCurrentTrack(): Track? = if (currentTrackIndex in currentTracks.indices) {
+        currentTracks[currentTrackIndex]
+    } else null
+
+    override fun onBind(intent: Intent?): IBinder? {
+        super.onBind(intent)
+        return LocalBinder()
+    }
+
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
     override fun onDestroy() {
@@ -189,6 +211,4 @@ class PlaybackService : MediaSessionService() {
         mediaSession?.release()
         super.onDestroy()
     }
-
-    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent)
 }
