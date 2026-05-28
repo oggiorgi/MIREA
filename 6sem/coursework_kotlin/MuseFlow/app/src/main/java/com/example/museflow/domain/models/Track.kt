@@ -1,5 +1,9 @@
 package com.example.museflow.domain.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Track(
     val id: Int,
     val title: String,
@@ -8,4 +12,4 @@ data class Track(
     val coverUrl: String,
     val audioUrl: String,
     val genre: String?
-)
+) : Parcelable

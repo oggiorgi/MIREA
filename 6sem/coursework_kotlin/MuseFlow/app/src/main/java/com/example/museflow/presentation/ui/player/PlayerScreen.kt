@@ -1,5 +1,6 @@
 package com.example.museflow.presentation.ui.player
 
+import android.content.Intent
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
@@ -22,8 +23,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Track
+import com.example.museflow.services.PlaybackService
 import com.example.museflow.ui.theme.MuseFlowTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -34,6 +37,7 @@ fun PlayerScreen(
     onPrevious: () -> Unit,
     onBack: () -> Unit
 ) {
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -51,6 +55,18 @@ fun PlayerScreen(
         }
     }
 
+    // Запуск сервиса для фонового воспроизведения
+    LaunchedEffect(Unit) {
+        val serviceIntent = Intent(context, PlaybackService::class.java)
+        context.startService(serviceIntent)
+
+        val startIntent = Intent(context, PlaybackService::class.java).apply {
+            putExtra("tracks", ArrayList(playlistTracks))
+            putExtra("startIndex", playlistTracks.indexOfFirst { it.id == track.id }.coerceAtLeast(0))
+        }
+        context.startService(startIntent)
+    }
+
     // Состояния для UI
     var isPlaying by remember { mutableStateOf(true) }
     var currentPosition by remember { mutableStateOf(0L) }
@@ -60,10 +76,22 @@ fun PlayerScreen(
     LaunchedEffect(Unit) {
         while (true) {
             delay(500)
-            currentPosition = exoPlayer.currentPosition
-            duration = exoPlayer.duration.coerceAtLeast(1)
-            isPlaying = exoPlayer.isPlaying
+            try {
+                currentPosition = exoPlayer.currentPosition
+                duration = exoPlayer.duration.coerceAtLeast(1)
+                isPlaying = exoPlayer.isPlaying
+            } catch (e: Exception) {
+                errorMessage = e.message
+            }
         }
+    }
+
+    // Показываем ошибку если есть
+    if (errorMessage != null) {
+        Text(
+            text = "Ошибка воспроизведения: $errorMessage",
+            color = MaterialTheme.colorScheme.error
+        )
     }
 
     DisposableEffect(Unit) {
@@ -99,7 +127,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Обложка
             Card(
                 modifier = Modifier
                     .size(250.dp)
@@ -120,7 +147,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Название трека
             Text(
                 text = track.title,
                 style = MaterialTheme.typography.headlineSmall,
@@ -130,7 +156,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Исполнитель
             Text(
                 text = track.artist,
                 style = MaterialTheme.typography.titleMedium,
@@ -139,7 +164,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Время
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -158,7 +182,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // SeekBar
             Slider(
                 value = currentPosition.toFloat(),
                 onValueChange = { newPosition ->
@@ -175,7 +198,6 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Кнопки управления
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
