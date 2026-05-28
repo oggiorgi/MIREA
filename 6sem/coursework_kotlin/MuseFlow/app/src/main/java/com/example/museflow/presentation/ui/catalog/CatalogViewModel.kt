@@ -26,6 +26,7 @@ class CatalogViewModel @Inject constructor(
     private val _state = MutableStateFlow<CatalogState>(CatalogState.Loading)
     val state: StateFlow<CatalogState> = _state.asStateFlow()
 
+    private var lastSearchQuery = ""
     private var allTracks: List<Track> = emptyList()
 
     init {
@@ -43,11 +44,13 @@ class CatalogViewModel @Inject constructor(
             }
         }
     }
+
     fun getTracksByGenre(): Map<String, List<Track>> {
         return allTracks.groupBy { it.genre ?: "Другое" }
     }
 
     fun search(query: String) {
+        lastSearchQuery = query
         if (query.isBlank()) {
             _state.value = CatalogState.Success(allTracks)
             return
@@ -61,5 +64,8 @@ class CatalogViewModel @Inject constructor(
                 _state.value = CatalogState.Error(e.message ?: "Ошибка поиска")
             }
         }
+    }
+    fun retryLastSearch() {
+        search(lastSearchQuery)
     }
 }

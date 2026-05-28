@@ -167,6 +167,7 @@ fun CatalogScreen(
                                 .fillMaxWidth()
                                 .clickable {
                                     searchQuery = query
+                                    searchHistoryManager.addQuery(query)  // ← ДОБАВИТЬ ЭТУ СТРОКУ
                                     viewModel.search(query)
                                     keyboardController?.hide()
                                     showHistory = false
@@ -196,12 +197,19 @@ fun CatalogScreen(
                 }
             }
             is CatalogState.Error -> {
+                val errorState = state as CatalogState.Error
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text((state as CatalogState.Error).message, color = MaterialTheme.colorScheme.error)
+                        Text(errorState.message, color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadTracks() }) {
-                            Text("Повторить")
+                        Button(onClick = {
+                            if (searchQuery.isNotEmpty()) {
+                                viewModel.retryLastSearch()  // повторяем ПОИСК
+                            } else {
+                                viewModel.loadTracks()       // повторяем загрузку каталога
+                            }
+                        }) {
+                            Text("Обновить")
                         }
                     }
                 }
