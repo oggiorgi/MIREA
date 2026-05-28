@@ -1,6 +1,5 @@
 package com.example.museflow.presentation.ui.catalog
 
-import android.R
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -394,7 +393,7 @@ fun DailyPlaylistPageCard(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -559,7 +558,7 @@ fun GenreTrackCard(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface  // ← адаптивный цвет
+            containerColor = MaterialTheme.colorScheme.surface  // ← только это, без background
         )
     ) {
         Column(
@@ -584,14 +583,13 @@ fun GenreTrackCard(
                     contentScale = ContentScale.Crop
                 )
 
-                // Кнопка добавления (маленький кружок в углу)
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .size(28.dp)
                         .padding(4.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),  // ← адаптивный
                     tonalElevation = 0.dp
                 ) {
                     IconButton(
