@@ -25,6 +25,10 @@ class AuthViewModel @Inject constructor(
     private val _state = MutableStateFlow<AuthState>(AuthState.Idle)
     val state: StateFlow<AuthState> = _state
 
+    fun resetState() {
+        _state.value = AuthState.Idle
+    }
+
     fun login(login: String, password: String) {
         viewModelScope.launch {
             _state.value = AuthState.Loading

@@ -103,6 +103,11 @@ class PlaylistsViewModel @Inject constructor(
         }
     }
 
+    fun resetState() {
+        _state.value = PlaylistsState.Loading
+        _isCreating.value = false
+    }
+
     suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int): Boolean {
         val result = addTrackToPlaylistUseCase(playlistId, trackId)
         if (result) {

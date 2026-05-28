@@ -65,6 +65,11 @@ class CatalogViewModel @Inject constructor(
             }
         }
     }
+    fun resetState() {
+        _state.value = CatalogState.Loading
+        allTracks = emptyList()
+        lastSearchQuery = ""
+    }
     fun retryLastSearch() {
         search(lastSearchQuery)
     }

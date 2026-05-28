@@ -32,7 +32,7 @@ fun AuthScreen(
     onSuccess: (String) -> Unit,
     authViewModel: AuthViewModel
 ) {
-    val authViewModel: AuthViewModel = hiltViewModel()
+    // ✅ НЕ вызывайте hiltViewModel() снова, используйте переданный экземпляр
 
     var isLoginMode by remember { mutableStateOf(true) }
     var login by remember { mutableStateOf("") }
@@ -41,6 +41,17 @@ fun AuthScreen(
     val state by authViewModel.state.collectAsState()
 
     var firstSuccessConsumed by remember { mutableStateOf(false) }
+
+    // ✅ Сбрасываем состояние при показе экрана
+    LaunchedEffect(Unit) {
+        authViewModel.resetState()
+        // Сбрасываем локальные поля ввода
+        login = ""
+        email = ""
+        password = ""
+        isLoginMode = true
+        firstSuccessConsumed = false
+    }
 
     LaunchedEffect(state) {
         if (state is AuthState.Success && !firstSuccessConsumed) {
@@ -104,7 +115,11 @@ fun AuthScreen(
         Text(
             text = if (isLoginMode) "Нет аккаунта? Зарегистрироваться" else "Уже есть аккаунт? Войти",
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable { isLoginMode = !isLoginMode }
+            modifier = Modifier.clickable {
+                isLoginMode = !isLoginMode
+                // Очищаем ошибки при переключении режима
+                firstSuccessConsumed = false
+            }
         )
 
         when (state) {
@@ -114,185 +129,6 @@ fun AuthScreen(
                 color = MaterialTheme.colorScheme.error
             )
             else -> Unit
-        }
-    }
-}
-
-// ==================== PREVIEWS ====================
-
-// Простой preview без ViewModel
-@Preview(showBackground = true, name = "Login Screen Preview")
-@Composable
-fun LoginScreenPreview() {
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            // Просто показываем заглушку интерфейса без логики
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Вход",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Логин") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Пароль") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Войти")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Нет аккаунта? Зарегистрироваться",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { }
-                )
-            }
-        }
-    }
-}
-
-// Preview для экрана регистрации
-@Preview(showBackground = true, name = "Register Screen Preview")
-@Composable
-fun RegisterScreenPreview() {
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Регистрация",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Логин") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Пароль") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Зарегистрироваться")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Уже есть аккаунт? Войти",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { }
-                )
-            }
-        }
-    }
-}
-
-// Preview для состояния загрузки
-@Preview(showBackground = true, name = "Loading State Preview")
-@Composable
-fun AuthLoadingStatePreview() {
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Вход",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Логин") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Пароль") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Войти")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CircularProgressIndicator()
-            }
         }
     }
 }

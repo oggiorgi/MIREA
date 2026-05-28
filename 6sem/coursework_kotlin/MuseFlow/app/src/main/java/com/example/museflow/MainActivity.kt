@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -95,7 +96,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     composable("auth") {
-                        val authViewModel: AuthViewModel = viewModel()
+                        val authViewModel: AuthViewModel = hiltViewModel()
                         AuthScreen(
                             authViewModel = authViewModel,
                             onSuccess = { token ->
@@ -108,40 +109,48 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("main") {
-                        MainScreen(
-                            onNavigateToPlayer = { track, tracks ->
-                                currentTrack = track
-                                playlistTracks = tracks
-                                navController.navigate("player/${track.id}")
-                            },
-                            onNavigateToPlaylist = { playlistId ->
-                                navController.navigate("playlist/$playlistId")
-                            },
-                            onNavigateToGenre = { genre ->
-                                navController.navigate("genre/$genre")
-                            },
-                            coroutineScope = coroutineScope,
-                            tokenManager = tokenManager,
-                            onLogout = {
-                                tokenManager.clearToken()
-                                isAuthenticated = false
-                                navController.navigate("auth") {
-                                    popUpTo("main") { inclusive = true }
-                                }
-                            },
-                            onClearCache = {
-                                coroutineScope.launch {
-                                    tracksRepository.clearCache()
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Кэш очищен",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            },
-                            isDarkTheme = isDarkTheme,
-                            onThemeToggle = onThemeToggle
-                        )
+                        key(isAuthenticated) {
+                            MainScreen(
+                                onNavigateToPlayer = { track, tracks ->
+                                    currentTrack = track
+                                    playlistTracks = tracks
+                                    navController.navigate("player/${track.id}")
+                                },
+                                onNavigateToPlaylist = { playlistId ->
+                                    navController.navigate("playlist/$playlistId")
+                                },
+                                onNavigateToGenre = { genre ->
+                                    navController.navigate("genre/$genre")
+                                },
+                                coroutineScope = coroutineScope,
+                                tokenManager = tokenManager,
+                                onLogout = {
+                                    tokenManager.clearToken()
+                                    // ✅ Сброс состояния ViewModel
+                                    catalogViewModel.resetState()
+                                    playlistsViewModel.resetState()
+                                    coroutineScope.launch {
+                                        tracksRepository.clearCache()
+                                    }
+                                    isAuthenticated = false
+                                    navController.navigate("auth") {
+                                        popUpTo("main") { inclusive = true }
+                                    }
+                                },
+                                onClearCache = {
+                                    coroutineScope.launch {
+                                        tracksRepository.clearCache()
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            "Кэш очищен",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                isDarkTheme = isDarkTheme,
+                                onThemeToggle = onThemeToggle
+                            )
+                        }
                     }
 
                     composable(
