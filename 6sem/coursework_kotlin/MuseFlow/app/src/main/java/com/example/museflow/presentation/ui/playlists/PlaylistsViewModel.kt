@@ -7,6 +7,7 @@ import com.example.museflow.domain.usecase.AddTrackToPlaylistUseCase
 import com.example.museflow.domain.usecase.CreatePlaylistUseCase
 import com.example.museflow.domain.usecase.DeletePlaylistUseCase
 import com.example.museflow.domain.usecase.GetPlaylistsUseCase
+import com.example.museflow.domain.usecase.RemoveTrackFromPlaylistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +26,8 @@ class PlaylistsViewModel @Inject constructor(
     private val getPlaylistsUseCase: GetPlaylistsUseCase,
     private val createPlaylistUseCase: CreatePlaylistUseCase,
     private val deletePlaylistUseCase: DeletePlaylistUseCase,
-    private val addTrackToPlaylistUseCase: AddTrackToPlaylistUseCase
+    private val addTrackToPlaylistUseCase: AddTrackToPlaylistUseCase,
+    private val removeTrackFromPlaylistUseCase: RemoveTrackFromPlaylistUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow<PlaylistsState>(PlaylistsState.Loading)
     val state: StateFlow<PlaylistsState> = _state.asStateFlow()
@@ -70,6 +72,17 @@ class PlaylistsViewModel @Inject constructor(
                 loadPlaylists()
             } catch (e: Exception) {
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления плейлиста")
+            }
+        }
+    }
+    // Добавьте этот метод в PlaylistsViewModel
+    fun removeTrackFromPlaylist(playlistId: Int, trackId: Int) {
+        viewModelScope.launch {
+            try {
+                removeTrackFromPlaylistUseCase(playlistId, trackId)
+                loadPlaylists()  // Перезагружаем список после удаления
+            } catch (e: Exception) {
+                _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления трека")
             }
         }
     }

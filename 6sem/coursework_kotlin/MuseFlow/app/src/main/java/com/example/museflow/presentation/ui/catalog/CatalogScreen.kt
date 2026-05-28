@@ -409,7 +409,6 @@ fun DailyPlaylistPageCard(
                     onAddToPlaylist = onAddToPlaylist
                 )
 
-                // Разделитель между треками (кроме последнего)
                 if (index < tracks.size - 1) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 12.dp),
@@ -418,7 +417,6 @@ fun DailyPlaylistPageCard(
                 }
             }
 
-            // Если в группе меньше 3 треков, добавляем пустые места
             repeat(3 - tracks.size) {
                 Spacer(modifier = Modifier.height(70.dp))
             }
@@ -436,10 +434,9 @@ fun DailyPlaylistPageItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onTrackClick(track) }
-            .padding(16.dp), // Увеличил отступы
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Обложка
         Image(
             painter = rememberAsyncImagePainter(model = track.coverUrl),
             contentDescription = "Cover",
@@ -451,28 +448,25 @@ fun DailyPlaylistPageItem(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Информация о треке
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = track.title,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = track.artist,
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        // Кнопка добавления
         IconButton(
             onClick = { onAddToPlaylist(track.id) },
             modifier = Modifier.size(40.dp)
@@ -480,12 +474,12 @@ fun DailyPlaylistPageItem(
             Icon(
                 Icons.Default.Add,
                 contentDescription = "Add to playlist",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
 }
-
 // ==================== ОСТАЛЬНЫЕ КОМПОНЕНТЫ ====================================================================================================
 
 @Composable
@@ -565,13 +559,11 @@ fun GenreTrackCard(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface  // ← адаптивный цвет
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface), // Убираем чёрный фон
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Обложка
@@ -583,9 +575,7 @@ fun GenreTrackCard(
                 Image(
                     painter = rememberAsyncImagePainter(
                         model = track.coverUrl,
-                        error = painterResource(
-                            id = R.drawable.ic_menu_gallery
-                        )
+                        error = painterResource(id = android.R.drawable.ic_menu_gallery)
                     ),
                     contentDescription = "Cover",
                     modifier = Modifier
@@ -601,7 +591,8 @@ fun GenreTrackCard(
                         .size(28.dp)
                         .padding(4.dp),
                     shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.9f)
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    tonalElevation = 0.dp
                 ) {
                     IconButton(
                         onClick = onAddToPlaylist,
@@ -610,7 +601,7 @@ fun GenreTrackCard(
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "Add to playlist",
-                            tint = Color.Black,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
                     }

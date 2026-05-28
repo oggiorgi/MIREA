@@ -16,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -135,9 +137,7 @@ fun GenreTrackItem(
             Image(
                 painter = rememberAsyncImagePainter(
                     model = track.coverUrl,
-                    error = androidx.compose.ui.res.painterResource(
-                        id = android.R.drawable.ic_menu_gallery
-                    )
+                    error = painterResource(id = android.R.drawable.ic_menu_gallery)
                 ),
                 contentDescription = "Cover",
                 modifier = Modifier
@@ -148,22 +148,22 @@ fun GenreTrackItem(
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Информация о треке
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = track.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = track.artist,
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
@@ -173,28 +173,14 @@ fun GenreTrackItem(
                         Icons.Default.PlayArrow,
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = Color.Gray
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = formatDuration(track.duration),
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    if (track.genre != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Text(
-                                text = track.genre!!,
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
                 }
             }
 

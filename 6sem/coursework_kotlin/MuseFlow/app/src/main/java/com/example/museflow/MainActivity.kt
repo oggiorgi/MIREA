@@ -22,6 +22,9 @@ import com.example.museflow.presentation.ui.catalog.CatalogViewModel
 import com.example.museflow.presentation.ui.genre.GenreTracksScreen
 import com.example.museflow.presentation.ui.main.MainScreen
 import com.example.museflow.presentation.ui.player.PlayerScreen
+import com.example.museflow.presentation.ui.playlists.PlaylistDetailScreen
+import com.example.museflow.presentation.ui.playlists.PlaylistsState
+import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
 import com.example.museflow.ui.theme.MuseFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -40,14 +43,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Загружаем сохранённую тему
         val sharedPrefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
 
         setContent {
-            // Состояние темы для переключения (вынесено внутрь setContent)
             var isDarkTheme by remember { mutableStateOf(sharedPrefs.getBoolean("dark_theme", false)) }
 
-            // Функция для переключения темы
             val onThemeToggle = {
                 isDarkTheme = !isDarkTheme
                 sharedPrefs.edit().putBoolean("dark_theme", isDarkTheme).apply()
@@ -57,8 +57,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
 
-                // Получаем ViewModel через Hilt
                 val catalogViewModel: CatalogViewModel = viewModel()
+                val playlistsViewModel: PlaylistsViewModel = viewModel()
 
                 val savedToken = remember { tokenManager.getToken() }
                 var isAuthenticated by remember {
@@ -84,12 +84,16 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
                     composable("main") {
                         MainScreen(
                             onNavigateToPlayer = { track, tracks ->
                                 currentTrack = track
                                 playlistTracks = tracks
                                 navController.navigate("player/${track.id}")
+                            },
+                            onNavigateToPlaylist = { playlistId ->
+                                navController.navigate("playlist/$playlistId")
                             },
                             coroutineScope = coroutineScope,
                             tokenManager = tokenManager,
@@ -114,6 +118,41 @@ class MainActivity : ComponentActivity() {
                             onThemeToggle = onThemeToggle
                         )
                     }
+
+                    // ✅ ПРАВИЛЬНОЕ МЕСТО ДЛЯ playlist - на том же уровне, что и main
+                    composable("playlist/{playlistId}") { backStackEntry ->
+                        val playlistId = backStackEntry.arguments?.getString("playlistId")?.toIntOrNull()
+                        val playlistsState by playlistsViewModel.state.collectAsState()
+                        val playlist = if (playlistsState is PlaylistsState.Success) {
+                            (playlistsState as PlaylistsState.Success).playlists.find { it.id == playlistId }
+                        } else null
+
+                        if (playlist != null) {
+                            PlaylistDetailScreen(
+                                playlist = playlist,
+                                onTrackClick = { track ->
+                                    currentTrack = track
+                                    playlistTracks = playlist.tracks
+                                    navController.navigate("player/${track.id}")
+                                },
+                                onRemoveTrack = { trackId ->
+                                    coroutineScope.launch {
+                                        playlistsViewModel.removeTrackFromPlaylist(playlistId!!, trackId)
+                                        playlistsViewModel.loadPlaylists()
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            "Трек удалён из плейлиста",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                onBack = { navController.popBackStack() }
+                            )
+                        } else {
+                            navController.popBackStack()
+                        }
+                    }
+
                     composable("genre/{genreName}") { backStackEntry ->
                         val genreName = backStackEntry.arguments?.getString("genreName") ?: ""
                         val tracks = catalogViewModel.getTracksByGenre()[genreName] ?: emptyList()
@@ -129,6 +168,7 @@ class MainActivity : ComponentActivity() {
                             onBack = { navController.popBackStack() }
                         )
                     }
+
                     composable("player/{trackId}") { backStackEntry ->
                         val trackId = backStackEntry.arguments?.getString("trackId")?.toIntOrNull()
                         val track = currentTrack ?: playlistTracks.find { it.id == trackId }

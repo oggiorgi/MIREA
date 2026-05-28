@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     onNavigateToPlayer: (Track, List<Track>) -> Unit,
+    onNavigateToPlaylist: (Int) -> Unit,
     coroutineScope: CoroutineScope,
     tokenManager: TokenManager,
     onLogout: () -> Unit,
@@ -54,7 +55,6 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             NavigationBar {
-                // Текущий маршрут для подсветки
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -141,9 +141,8 @@ fun MainScreen(
             composable("playlists") {
                 PlaylistsScreen(
                     onPlaylistClick = { playlist ->
-                        if (playlist.tracks.isNotEmpty()) {
-                            onNavigateToPlayer(playlist.tracks.first(), playlist.tracks)
-                        }
+                        // Переход должен обрабатываться в MainActivity, но здесь мы просто передаём наружу
+                        onNavigateToPlaylist(playlist.id)  // ← нужно добавить этот callback
                     },
                     viewModel = playlistsViewModel
                 )
