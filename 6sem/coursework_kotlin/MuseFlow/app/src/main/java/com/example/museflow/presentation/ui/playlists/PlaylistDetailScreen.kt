@@ -20,12 +20,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.example.museflow.presentation.ui.catalog.formatDuration
+import com.example.museflow.ui.theme.MuseFlowTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,7 +125,7 @@ fun PlaylistTrackItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface  // ← адаптивный цвет
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -132,7 +134,6 @@ fun PlaylistTrackItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Обложка
             Image(
                 painter = rememberAsyncImagePainter(model = track.coverUrl),
                 contentDescription = "Cover",
@@ -151,12 +152,12 @@ fun PlaylistTrackItem(
                     fontSize = 15.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface  // ← адаптивный цвет текста
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = track.artist,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,  // ← адаптивный цвет
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -167,7 +168,6 @@ fun PlaylistTrackItem(
                 )
             }
 
-            // Кнопка удаления
             IconButton(
                 onClick = onRemove,
                 modifier = Modifier.size(36.dp)
@@ -178,6 +178,173 @@ fun PlaylistTrackItem(
                     tint = MaterialTheme.colorScheme.error
                 )
             }
+        }
+    }
+}
+
+// ==================== PREVIEWS ====================
+
+
+// Preview карточки трека в светлой теме
+@Preview(showBackground = true, name = "Playlist Track Item - Light")
+@Composable
+fun PlaylistTrackItemLightPreview() {
+    MuseFlowTheme(darkTheme = false) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            PlaylistTrackItem(
+                track = Track(
+                    id = 1,
+                    title = "Bohemian Rhapsody",
+                    artist = "Queen",
+                    duration = 354,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                onClick = {},
+                onRemove = {}
+            )
+        }
+    }
+}
+
+// Preview карточки трека в тёмной теме (здесь должны быть тёмные карточки)
+@Preview(showBackground = true, name = "Playlist Track Item - Dark")
+@Composable
+fun PlaylistTrackItemDarkPreview() {
+    MuseFlowTheme(darkTheme = true) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            PlaylistTrackItem(
+                track = Track(
+                    id = 1,
+                    title = "Bohemian Rhapsody",
+                    artist = "Queen",
+                    duration = 354,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                onClick = {},
+                onRemove = {}
+            )
+        }
+    }
+}
+
+// Preview списка треков в плейлисте (светлая тема)
+@Preview(showBackground = true, name = "Playlist Detail Screen - Light")
+@Composable
+fun PlaylistDetailScreenLightPreview() {
+    MuseFlowTheme(darkTheme = false) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val sampleTracks = listOf(
+                Track(
+                    id = 1,
+                    title = "Bohemian Rhapsody",
+                    artist = "Queen",
+                    duration = 354,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                Track(
+                    id = 2,
+                    title = "Stairway to Heaven",
+                    artist = "Led Zeppelin",
+                    duration = 482,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                Track(
+                    id = 3,
+                    title = "Hey Jude",
+                    artist = "The Beatles",
+                    duration = 431,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                )
+            )
+
+            PlaylistDetailScreen(
+                playlist = Playlist(
+                    id = 1,
+                    name = "Rock Classics",
+                    coverUrl = null,
+                    tracks = sampleTracks
+                ),
+                onTrackClick = {},
+                onRemoveTrack = {},
+                onBack = {}
+            )
+        }
+    }
+}
+
+// Preview списка треков в плейлисте (тёмная тема)
+@Preview(showBackground = true, name = "Playlist Detail Screen - Dark")
+@Composable
+fun PlaylistDetailScreenDarkPreview() {
+    MuseFlowTheme(darkTheme = true) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val sampleTracks = listOf(
+                Track(
+                    id = 1,
+                    title = "Bohemian Rhapsody",
+                    artist = "Queen",
+                    duration = 354,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                Track(
+                    id = 2,
+                    title = "Stairway to Heaven",
+                    artist = "Led Zeppelin",
+                    duration = 482,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                ),
+                Track(
+                    id = 3,
+                    title = "Hey Jude",
+                    artist = "The Beatles",
+                    duration = 431,
+                    coverUrl = "https://picsum.photos/id/100/200",
+                    audioUrl = "",
+                    genre = "Rock"
+                )
+            )
+
+            PlaylistDetailScreen(
+                playlist = Playlist(
+                    id = 1,
+                    name = "Rock Classics",
+                    coverUrl = null,
+                    tracks = sampleTracks
+                ),
+                onTrackClick = {},
+                onRemoveTrack = {},
+                onBack = {}
+            )
         }
     }
 }
