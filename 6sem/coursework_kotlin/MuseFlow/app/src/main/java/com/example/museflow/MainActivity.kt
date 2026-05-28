@@ -2,6 +2,7 @@ package com.example.museflow
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -30,6 +31,7 @@ import com.example.museflow.presentation.ui.player.PlayerScreen
 import com.example.museflow.presentation.ui.playlists.PlaylistDetailScreen
 import com.example.museflow.presentation.ui.playlists.PlaylistsState
 import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
+import com.example.museflow.services.PlaybackService
 import com.example.museflow.ui.theme.MuseFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -221,5 +223,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    // Останавливаем сервис при закрытии приложения
+    override fun onDestroy() {
+        super.onDestroy()
+        val intent = Intent(this, PlaybackService::class.java)
+        stopService(intent)
     }
 }
