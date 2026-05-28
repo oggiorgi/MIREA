@@ -41,8 +41,18 @@ fun PlayerScreen(
     var currentTrackTitle by remember { mutableStateOf(track.title) }
     var currentTrackArtist by remember { mutableStateOf(track.artist) }
     var currentCoverUrl by remember { mutableStateOf(track.coverUrl) }
+    var currentPosition by remember { mutableStateOf(0L) }
+    var currentDuration by remember { mutableStateOf(0L) }
     var serviceBound by remember { mutableStateOf(false) }
     var playbackService by remember { mutableStateOf<PlaybackService?>(null) }
+
+    // Форматирование времени (миллисекунды -> MM:SS)
+    fun formatTime(ms: Long): String {
+        val seconds = ms / 1000
+        val minutes = seconds / 60
+        val secs = seconds % 60
+        return String.format("%d:%02d", minutes, secs)
+    }
 
     // Подключение к сервису для получения состояния
     val connection = remember {
@@ -56,6 +66,8 @@ fun PlayerScreen(
                     while (serviceBound) {
                         playbackService?.let {
                             isPlaying = it.isPlaying()
+                            currentPosition = it.getCurrentPosition()
+                            currentDuration = it.getDuration()
                             val currentTrack = it.getCurrentTrack()
                             if (currentTrack != null) {
                                 currentTrackTitle = currentTrack.title
@@ -129,8 +141,50 @@ fun PlayerScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = currentTrackArtist, style = MaterialTheme.typography.titleMedium)
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
+            // ==================== SEEK BAR ====================
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Ползунок перемотки
+                Slider(
+                    value = if (currentDuration > 0) currentPosition.toFloat() / currentDuration.toFloat() else 0f,
+                    onValueChange = { newValue ->
+                        val newPosition = (newValue * currentDuration).toLong()
+                        playbackService?.seekTo(newPosition)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Текущее время и длительность
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = formatTime(currentPosition),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = formatTime(currentDuration),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ==================== КНОПКИ УПРАВЛЕНИЯ ====================
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,

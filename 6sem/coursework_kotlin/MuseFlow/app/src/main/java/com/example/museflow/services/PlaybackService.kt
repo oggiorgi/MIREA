@@ -42,7 +42,6 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         createNotificationChannel()
 
-        // Создаём плеер на главном потоке
         player = ExoPlayer.Builder(this).build().apply {
             addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -115,6 +114,18 @@ class PlaybackService : MediaSessionService() {
         playerInstance.play()
         updateNotification()
     }
+
+    // ==================== НОВЫЕ МЕТОДЫ ДЛЯ SEEK BAR ====================
+
+    fun getCurrentPosition(): Long = player?.currentPosition ?: 0L
+
+    fun getDuration(): Long = player?.duration ?: 0L
+
+    fun seekTo(position: Long) {
+        player?.seekTo(position)
+    }
+
+    // ==================== СУЩЕСТВУЮЩИЕ МЕТОДЫ ====================
 
     private fun createNotification(): Notification {
         val currentTrack = if (currentTrackIndex in currentTracks.indices) {
