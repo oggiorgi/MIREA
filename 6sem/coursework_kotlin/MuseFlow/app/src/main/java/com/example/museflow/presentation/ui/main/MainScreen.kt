@@ -101,8 +101,8 @@ fun MainScreen(
         ) {
             composable("catalog") {
                 CatalogScreen(
-                    onTrackClick = { track ->
-                        onNavigateToPlayer(track, listOf(track))
+                    onTrackClick = { track, allTracks ->
+                        onNavigateToPlayer(track, allTracks)  // ← передаём ВСЕ треки
                     },
                     onGenreClick = { genre ->
                         navController.navigate("genre/$genre")

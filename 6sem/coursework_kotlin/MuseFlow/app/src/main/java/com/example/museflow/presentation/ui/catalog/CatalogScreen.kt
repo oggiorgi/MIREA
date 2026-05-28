@@ -67,7 +67,7 @@ class SearchHistoryManager(context: Context) {
 
 @Composable
 fun CatalogScreen(
-    onTrackClick: (Track) -> Unit,
+    onTrackClick: (Track, List<Track>) -> Unit,
     onGenreClick: (String) -> Unit,
     playlists: List<Playlist> = emptyList(),
     onAddToPlaylist: (Int, Int) -> Unit,
@@ -87,6 +87,12 @@ fun CatalogScreen(
 
     // История поиска
     val searchHistory = remember { searchHistoryManager.getHistory() }
+
+    // Получаем текущий список треков из состояния
+    val currentTracks = when (state) {
+        is CatalogState.Success -> (state as CatalogState.Success).tracks
+        else -> emptyList()
+    }
 
     LaunchedEffect(selectedTrackId) {
         if (selectedTrackId != null) {
@@ -255,7 +261,7 @@ fun CatalogScreen(
                             item {
                                 DailyPlaylistSection(
                                     tracks = dailyPlaylistTracks,
-                                    onTrackClick = onTrackClick,
+                                    onTrackClick = { track -> onTrackClick(track, currentTracks) },
                                     onAddToPlaylist = { trackId ->
                                         selectedTrackId = trackId
                                     }
@@ -268,7 +274,7 @@ fun CatalogScreen(
                                 GenreFolderSection(
                                     genreName = genre,
                                     tracks = genreTracks,
-                                    onTrackClick = onTrackClick,
+                                    onTrackClick = { track -> onTrackClick(track, currentTracks) },
                                     onGenreClick = { onGenreClick(genre) },
                                     onAddToPlaylist = { trackId ->
                                         selectedTrackId = trackId
