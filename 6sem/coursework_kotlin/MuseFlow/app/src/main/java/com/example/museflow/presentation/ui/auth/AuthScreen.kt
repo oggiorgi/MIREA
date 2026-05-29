@@ -34,13 +34,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun AuthScreen(
     onSuccess: (String) -> Unit,
     authViewModel: AuthViewModel
 ) {
-    // ✅ НЕ вызывайте hiltViewModel() снова, используйте переданный экземпляр
-
+    val context = LocalContext.current
     var isLoginMode by remember { mutableStateOf(true) }
     var login by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -65,6 +67,9 @@ fun AuthScreen(
         if (state is AuthState.Success && !firstSuccessConsumed) {
             firstSuccessConsumed = true
             onSuccess((state as AuthState.Success).token)
+        } else if (state is AuthState.Error) {
+            Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            authViewModel.resetState()
         }
     }
 
@@ -92,7 +97,7 @@ fun AuthScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
+                    keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Next
                 )
             )
@@ -106,7 +111,7 @@ fun AuthScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
+                        keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Next
                     )
                 )
@@ -136,10 +141,19 @@ fun AuthScreen(
 
             Button(
                 onClick = {
-                    if (isLoginMode) authViewModel.login(login, password)
-                    else authViewModel.register(login, email, password)
+                    if (isLoginMode) {
+                        if (login.isNotBlank() && password.isNotBlank()) {
+                            authViewModel.login(login, password)
+                        }
+                    } else {
+                        if (login.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
+                            authViewModel.register(login, email, password)
+                        }
+                    }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = if (isLoginMode) login.isNotBlank() && password.isNotBlank() 
+                          else login.isNotBlank() && email.isNotBlank() && password.isNotBlank()
             ) {
                 Text(if (isLoginMode) "Войти" else "Зарегистрироваться")
             }
@@ -158,11 +172,6 @@ fun AuthScreen(
 
             when (state) {
                 is AuthState.Loading -> CircularProgressIndicator()
-                is AuthState.Error -> Text(
-                    text = (state as AuthState.Error).message,
-                    color = MaterialTheme.colorScheme.error
-                )
-
                 else -> Unit
             }
         }

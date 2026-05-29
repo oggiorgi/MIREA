@@ -144,7 +144,7 @@ fun CatalogScreen(
                 }
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
+                keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(

@@ -30,6 +30,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun login(login: String, password: String) {
+        if (login.isBlank() || password.isBlank()) return
         viewModelScope.launch {
             _state.value = AuthState.Loading
             try {
@@ -42,6 +43,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun register(login: String, email: String, password: String) {
+        if (login.isBlank() || email.isBlank() || password.isBlank()) return
         viewModelScope.launch {
             _state.value = AuthState.Loading
             try {
