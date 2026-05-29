@@ -60,75 +60,83 @@ fun AuthScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Text(
-            text = if (isLoginMode) "Вход" else "Регистрация",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(32.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = if (isLoginMode) "Вход" else "Регистрация",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value = login,
-            onValueChange = { login = it },
-            label = { Text("Логин") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (!isLoginMode) {
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
+                value = login,
+                onValueChange = { login = it },
+                label = { Text("Логин") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
-        }
 
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Пароль") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (isLoginMode) authViewModel.login(login, password)
-                else authViewModel.register(login, email, password)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(if (isLoginMode) "Войти" else "Зарегистрироваться")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = if (isLoginMode) "Нет аккаунта? Зарегистрироваться" else "Уже есть аккаунт? Войти",
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable {
-                isLoginMode = !isLoginMode
-                // Очищаем ошибки при переключении режима
-                firstSuccessConsumed = false
+            if (!isLoginMode) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
-        )
 
-        when (state) {
-            is AuthState.Loading -> CircularProgressIndicator()
-            is AuthState.Error -> Text(
-                text = (state as AuthState.Error).message,
-                color = MaterialTheme.colorScheme.error
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Пароль") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
-            else -> Unit
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (isLoginMode) authViewModel.login(login, password)
+                    else authViewModel.register(login, email, password)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (isLoginMode) "Войти" else "Зарегистрироваться")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (isLoginMode) "Нет аккаунта? Зарегистрироваться" else "Уже есть аккаунт? Войти",
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    isLoginMode = !isLoginMode
+                    // Очищаем ошибки при переключении режима
+                    firstSuccessConsumed = false
+                }
+            )
+
+            when (state) {
+                is AuthState.Loading -> CircularProgressIndicator()
+                is AuthState.Error -> Text(
+                    text = (state as AuthState.Error).message,
+                    color = MaterialTheme.colorScheme.error
+                )
+
+                else -> Unit
+            }
         }
     }
 }
