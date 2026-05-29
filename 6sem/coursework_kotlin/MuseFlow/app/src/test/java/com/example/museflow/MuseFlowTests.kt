@@ -144,11 +144,8 @@ class MuseFlowTests {
             
             // С StandardTestDispatcher нужно продвинуть планировщик
             testScheduler.advanceUntilIdle()
-            
-            // В зависимости от скорости выполнения, Loading может проскочить,
-            // но так как мы продвинули до конца, получаем финальное состояние.
-            // Если мы хотим проверить Loading, нужен delay в coEvery.
-            // Для простоты проверим финальное состояние, пропустив промежуточные если они есть.
+
+            // Проверим финальное состояние, пропустив промежуточные если они есть.
             var lastState: AuthState = awaitItem()
             while (lastState is AuthState.Loading) {
                 lastState = awaitItem()
