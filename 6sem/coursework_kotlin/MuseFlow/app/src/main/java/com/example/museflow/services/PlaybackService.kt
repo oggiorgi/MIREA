@@ -48,8 +48,18 @@ class PlaybackService : MediaSessionService() {
                     currentIsPlaying = playbackState == Player.STATE_READY && isPlaying
                     updateNotification()
                 }
+
                 override fun onIsPlayingChanged(playing: Boolean) {
                     currentIsPlaying = playing
+                    updateNotification()
+                }
+
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    super.onMediaItemTransition(mediaItem, reason)
+                    // Обновляем текущий индекс при переходе к следующему треку
+                    player?.let {
+                        currentTrackIndex = it.currentMediaItemIndex
+                    }
                     updateNotification()
                 }
             })
@@ -78,8 +88,12 @@ class PlaybackService : MediaSessionService() {
                 }
             }
             else -> {
-                @Suppress("UNCHECKED_CAST")
-                val tracksList = intent?.getSerializableExtra("tracks") as? ArrayList<Track>
+                val tracksList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent?.getParcelableArrayListExtra("tracks", Track::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent?.getParcelableArrayListExtra("tracks")
+                }
                 val startIndex = intent?.getIntExtra("startIndex", 0) ?: 0
                 if (tracksList != null && tracksList.isNotEmpty()) {
                     startPlayback(tracksList, startIndex)
@@ -106,6 +120,13 @@ class PlaybackService : MediaSessionService() {
             MediaItem.Builder()
                 .setUri(trackItem.audioUrl)
                 .setMediaId(trackItem.id.toString())
+                .setMediaMetadata(
+                    androidx.media3.common.MediaMetadata.Builder()
+                        .setTitle(trackItem.title)
+                        .setArtist(trackItem.artist)
+                        .setArtworkUri(android.net.Uri.parse(trackItem.coverUrl))
+                        .build()
+                )
                 .build()
         }
 

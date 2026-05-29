@@ -54,25 +54,35 @@ fun PlayerScreen(
         return String.format("%d:%02d", minutes, secs)
     }
 
+    // Синхронизация при изменении входящего трека (например, при ручной навигации)
+    LaunchedEffect(track) {
+        currentTrackTitle = track.title
+        currentTrackArtist = track.artist
+        currentCoverUrl = track.coverUrl
+    }
+
     // Подключение к сервису для получения состояния
     val connection = remember {
         object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                 val binder = service as PlaybackService.LocalBinder
-                playbackService = binder.getService()
+                val s = binder.getService()
+                playbackService = s
                 serviceBound = true
+                
                 // Начинаем обновлять состояние
                 scope.launch {
                     while (serviceBound) {
-                        playbackService?.let {
+                        s.let {
                             isPlaying = it.isPlaying()
                             currentPosition = it.getCurrentPosition()
                             currentDuration = it.getDuration()
-                            val currentTrack = it.getCurrentTrack()
-                            if (currentTrack != null) {
-                                currentTrackTitle = currentTrack.title
-                                currentTrackArtist = currentTrack.artist
-                                currentCoverUrl = currentTrack.coverUrl
+                            val serviceTrack = it.getCurrentTrack()
+                            if (serviceTrack != null) {
+                                // Обновляем UI данными из сервиса (для автоперехода)
+                                currentTrackTitle = serviceTrack.title
+                                currentTrackArtist = serviceTrack.artist
+                                currentCoverUrl = serviceTrack.coverUrl
                             }
                         }
                         delay(500)
