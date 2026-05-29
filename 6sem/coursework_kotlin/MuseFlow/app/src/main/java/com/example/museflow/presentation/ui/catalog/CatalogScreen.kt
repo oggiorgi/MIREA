@@ -34,6 +34,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.google.gson.Gson
@@ -138,7 +142,19 @@ fun CatalogScreen(
                         Icon(Icons.Default.Clear, contentDescription = "Очистить")
                     }
                 }
-            }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    if (searchQuery.isNotBlank()) {
+                        searchHistoryManager.addQuery(searchQuery)
+                    }
+                    keyboardController?.hide()
+                }
+            )
         )
 
         // История поиска
