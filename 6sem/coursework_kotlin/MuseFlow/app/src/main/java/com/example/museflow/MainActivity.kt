@@ -80,8 +80,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
 
-                val catalogViewModel: CatalogViewModel = viewModel()
-                val playlistsViewModel: PlaylistsViewModel = viewModel()
+                val catalogViewModel: CatalogViewModel = hiltViewModel()
+                val playlistsViewModel: PlaylistsViewModel = hiltViewModel()
 
                 val savedToken = remember { tokenManager.getToken() }
                 var isAuthenticated by remember {
@@ -101,6 +101,10 @@ class MainActivity : ComponentActivity() {
                             authViewModel = authViewModel,
                             onSuccess = { token ->
                                 isAuthenticated = true
+                                // Принудительная загрузка данных после входа
+                                catalogViewModel.loadTracks()
+                                playlistsViewModel.loadPlaylists()
+                                
                                 navController.navigate("main") {
                                     popUpTo("auth") { inclusive = true }
                                 }
@@ -126,6 +130,10 @@ class MainActivity : ComponentActivity() {
                                 tokenManager = tokenManager,
                                 onLogout = {
                                     tokenManager.clearToken()
+                                    // Останавливаем воспроизведение при логауте
+                                    val intent = Intent(this@MainActivity, PlaybackService::class.java)
+                                    stopService(intent)
+
                                     // ✅ Сброс состояния ViewModel
                                     catalogViewModel.resetState()
                                     playlistsViewModel.resetState()
@@ -148,7 +156,9 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 isDarkTheme = isDarkTheme,
-                                onThemeToggle = onThemeToggle
+                                onThemeToggle = onThemeToggle,
+                                catalogViewModel = catalogViewModel,
+                                playlistsViewModel = playlistsViewModel
                             )
                         }
                     }

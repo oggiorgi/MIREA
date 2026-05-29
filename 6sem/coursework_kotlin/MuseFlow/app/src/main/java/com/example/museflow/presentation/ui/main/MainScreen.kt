@@ -38,13 +38,12 @@ fun MainScreen(
     onLogout: () -> Unit,
     onClearCache: () -> Unit,
     isDarkTheme: Boolean,
-    onThemeToggle: () -> Unit
+    onThemeToggle: () -> Unit,
+    catalogViewModel: CatalogViewModel,
+    playlistsViewModel: PlaylistsViewModel
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
-
-    val catalogViewModel: CatalogViewModel = hiltViewModel()
-    val playlistsViewModel: PlaylistsViewModel = hiltViewModel()
 
     val playlistsState by playlistsViewModel.state.collectAsState()
     val playlists = if (playlistsState is PlaylistsState.Success) {
