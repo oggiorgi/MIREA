@@ -37,7 +37,12 @@ class AuthViewModel @Inject constructor(
                 val token = loginUseCase(login, password)
                 _state.value = AuthState.Success(token)
             } catch (e: Exception) {
-                _state.value = AuthState.Error(e.message ?: "Ошибка входа")
+                val errorMessage = if (e.message?.contains("400") == true) {
+                    "Неправильный логин или пароль"
+                } else {
+                    e.message ?: "Ошибка входа"
+                }
+                _state.value = AuthState.Error(errorMessage)
             }
         }
     }
