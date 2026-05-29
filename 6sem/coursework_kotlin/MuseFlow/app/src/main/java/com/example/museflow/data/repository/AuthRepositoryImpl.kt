@@ -15,6 +15,7 @@ class AuthRepositoryImpl(
         val response = api.login(LoginRequest(login, password))
         val token = response.token ?: throw IOException("Token not received")
         tokenManager.saveToken(token)
+        tokenManager.saveUsername(login)
         return token
     }
 
@@ -28,6 +29,7 @@ class AuthRepositoryImpl(
         val loginResponse = api.login(LoginRequest(login, password))
         val token = loginResponse.token ?: throw IOException("Token not received after login")
         tokenManager.saveToken(token)
+        tokenManager.saveUsername(login)
         return token
     }
 }

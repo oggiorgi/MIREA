@@ -16,9 +16,15 @@ class TokenManager @Inject constructor(
         prefs.edit().putString("jwt_token", token).apply()
     }
 
+    fun saveUsername(username: String) {
+        prefs.edit().putString("username", username).apply()
+    }
+
     fun getToken(): String? = prefs.getString("jwt_token", null)
 
+    fun getUsername(): String? = prefs.getString("username", null)
+
     fun clearToken() {
-        prefs.edit().remove("jwt_token").apply()
+        prefs.edit().remove("jwt_token").remove("username").apply()
     }
 }

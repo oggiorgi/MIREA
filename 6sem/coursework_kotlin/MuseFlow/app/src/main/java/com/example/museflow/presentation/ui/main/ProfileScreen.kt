@@ -23,6 +23,7 @@ fun ProfileScreen(
     onThemeToggle: () -> Unit
 ) {
     val token = tokenManager.getToken()
+    val username = tokenManager.getUsername()
     val isLoggedIn = token != null && token.isNotEmpty()
 
     Column(
@@ -67,7 +68,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = if (isLoggedIn) "Вы авторизованы" else "❌ Вы не авторизованы",
+                    text = if (isLoggedIn) "Вы авторизованы: ${username ?: "Пользователь"}" else "❌ Вы не авторизованы",
                     style = MaterialTheme.typography.bodyLarge
                 )
 
