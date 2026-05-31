@@ -42,16 +42,19 @@ fun PlayerScreen(
     var currentTrackArtist by remember { mutableStateOf(track.artist) }
     var currentCoverUrl by remember { mutableStateOf(track.coverUrl) }
     var currentPosition by remember { mutableStateOf(0L) }
-    var currentDuration by remember { mutableStateOf(0L) }
+    var currentDuration by remember { mutableStateOf(track.duration * 1000L) }
+    var isDurationFinal by remember { mutableStateOf(false) } // Флаг: получили ли мы точное время от плеера
     var serviceBound by remember { mutableStateOf(false) }
     var playbackService by remember { mutableStateOf<PlaybackService?>(null) }
 
     // Форматирование времени (миллисекунды -> MM:SS)
     fun formatTime(ms: Long): String {
+        // Если время отрицательное или слишком большое (глюк плеера), возвращаем 0:00
+        if (ms <= 0 || ms > 36000000) return "0:00"
         val seconds = ms / 1000
         val minutes = seconds / 60
         val secs = seconds % 60
-        return String.format("%d:%02d", minutes, secs)
+        return String.format(java.util.Locale.getDefault(), "%d:%02d", minutes, secs)
     }
 
     // Синхронизация при изменении входящего трека (например, при ручной навигации)
@@ -59,6 +62,8 @@ fun PlayerScreen(
         currentTrackTitle = track.title
         currentTrackArtist = track.artist
         currentCoverUrl = track.coverUrl
+        currentDuration = track.duration * 1000L
+        isDurationFinal = false // Сбрасываем флаг для нового трека
     }
 
     // Подключение к сервису для получения состояния
@@ -76,13 +81,32 @@ fun PlayerScreen(
                         s.let {
                             isPlaying = it.isPlaying()
                             currentPosition = it.getCurrentPosition()
-                            currentDuration = it.getDuration()
+                            
+                            // ✅ Обновляем длительность только если она пришла корректная
+                            val duration = it.getDuration()
+                            if (duration > 0) {
+                                // Если разница с текущим временем больше 2 секунд или мы еще не зафиксировали время
+                                if (!isDurationFinal || Math.abs(currentDuration - duration) > 2000) {
+                                    currentDuration = duration
+                                    isDurationFinal = true
+                                }
+                            }
+
                             val serviceTrack = it.getCurrentTrack()
                             if (serviceTrack != null) {
-                                // Обновляем UI данными из сервиса (для автоперехода)
-                                currentTrackTitle = serviceTrack.title
-                                currentTrackArtist = serviceTrack.artist
-                                currentCoverUrl = serviceTrack.coverUrl
+                                // Если сменился трек в сервисе (автопереход)
+                                if (currentTrackTitle != serviceTrack.title) {
+                                    currentTrackTitle = serviceTrack.title
+                                    currentTrackArtist = serviceTrack.artist
+                                    currentCoverUrl = serviceTrack.coverUrl
+                                    // Обнуляем флаг фиксации для нового трека
+                                    isDurationFinal = false
+                                }
+                                
+                                // Также обновляем длительность из метаданных нового трека если плеер еще не выдал свою
+                                if (!isDurationFinal) {
+                                    currentDuration = serviceTrack.duration * 1000L
+                                }
                             }
                         }
                         delay(500)

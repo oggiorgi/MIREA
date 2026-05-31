@@ -66,6 +66,13 @@ class SearchHistoryManager(context: Context, private val username: String?) {
         prefs.edit().putString(historyKey, json).apply()
     }
 
+    fun removeQuery(query: String) {
+        val history = getHistory().toMutableList()
+        history.remove(query)
+        val json = gson.toJson(history)
+        prefs.edit().putString(historyKey, json).apply()
+    }
+
     fun clearHistory() {
         prefs.edit().putString(historyKey, "[]").apply()
     }
@@ -248,12 +255,7 @@ fun CatalogScreen(
 
                             IconButton(
                                 onClick = {
-                                    val currentHistory = searchHistory.toMutableList()
-                                    currentHistory.remove(query)
-                                    val gson = Gson()
-                                    val json = gson.toJson(currentHistory)
-                                    val prefs = context.getSharedPreferences("search_history", Context.MODE_PRIVATE)
-                                    prefs.edit().putString("history", json).apply()
+                                    searchHistoryManager.removeQuery(query)
                                     searchHistory = searchHistoryManager.getHistory()
                                     showHistory = searchHistory.isNotEmpty()
                                 },

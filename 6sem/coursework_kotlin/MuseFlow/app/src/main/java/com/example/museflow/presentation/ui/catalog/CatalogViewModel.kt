@@ -50,7 +50,10 @@ class CatalogViewModel @Inject constructor(
     }
 
     fun search(query: String) {
-        lastSearchQuery = query
+        if (query.isNotBlank()) {
+            lastSearchQuery = query
+        }
+
         if (query.isBlank()) {
             _state.value = CatalogState.Success(allTracks)
             return
@@ -71,6 +74,10 @@ class CatalogViewModel @Inject constructor(
         lastSearchQuery = ""
     }
     fun retryLastSearch() {
-        search(lastSearchQuery)
+        if (lastSearchQuery.isEmpty()) {
+            loadTracks()
+        } else {
+            search(lastSearchQuery)
+        }
     }
 }
