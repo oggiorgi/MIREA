@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,24 +37,15 @@ fun GenreTracksScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    Column {
                         Text(
                             text = genreName,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "• ${tracks.size} треков",
-                            fontSize = 14.sp,
-                            color = Color.Gray
+                            text = "${tracks.size} ${getTracksText(tracks.size)}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -65,8 +55,8 @@ fun GenreTracksScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -108,6 +98,14 @@ fun GenreTracksScreen(
                 }
             }
         }
+    }
+}
+
+fun getTracksText(count: Int): String {
+    return when {
+        count % 10 == 1 && count % 100 != 11 -> "трек"
+        count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "трека"
+        else -> "треков"
     }
 }
 
