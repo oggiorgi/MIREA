@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
+import com.example.museflow.utils.FormatUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -61,13 +62,6 @@ class SearchHistoryManager(context: Context, private val username: String?) {
         history.remove(query)
         history.add(0, query)
         if (history.size > 10) history.removeAt(10)
-        val json = gson.toJson(history)
-        prefs.edit().putString(historyKey, json).apply()
-    }
-
-    fun removeQuery(query: String) {
-        val history = getHistory().toMutableList()
-        history.remove(query)
         val json = gson.toJson(history)
         prefs.edit().putString(historyKey, json).apply()
     }
@@ -269,7 +263,7 @@ fun CatalogScreen(
                                 )
                             }
                         }
-                        Divider(modifier = Modifier.padding(start = 48.dp))
+                        HorizontalDivider(modifier = Modifier.padding(start = 48.dp))
                     }
                 }
             }
@@ -375,7 +369,6 @@ fun CatalogScreen(
             },
             onAdd = { playlistId ->
                 onAddToPlaylist(playlistId, selectedTrackId!!)
-                showAddDialog = false
                 selectedTrackId = null
             }
         )
@@ -391,7 +384,6 @@ fun DailyPlaylistSection(
 ) {
     // Разбиваем треки на группы по 3
     val groupedTracks = tracks.chunked(3)
-    val screenWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
 
     if (groupedTracks.isEmpty()) return
 
@@ -555,6 +547,11 @@ fun DailyPlaylistPageItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = FormatUtils.formatDuration(track.duration),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
 
@@ -759,10 +756,4 @@ fun SeeAllButton(onClick: () -> Unit) {
             )
         }
     }
-}
-
-fun formatDuration(seconds: Int): String {
-    val minutes = seconds / 60
-    val secs = seconds % 60
-    return String.format("%d:%02d", minutes, secs)
 }

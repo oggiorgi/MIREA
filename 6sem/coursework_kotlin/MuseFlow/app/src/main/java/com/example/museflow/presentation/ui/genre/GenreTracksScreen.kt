@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Track
-import com.example.museflow.presentation.ui.catalog.formatDuration
+import com.example.museflow.utils.FormatUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +43,7 @@ fun GenreTracksScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${tracks.size} ${getTracksText(tracks.size)}",
+                            text = "${tracks.size} ${FormatUtils.getTracksText(tracks.size)}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -98,14 +98,6 @@ fun GenreTracksScreen(
                 }
             }
         }
-    }
-}
-
-fun getTracksText(count: Int): String {
-    return when {
-        count % 10 == 1 && count % 100 != 11 -> "трек"
-        count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "трека"
-        else -> "треков"
     }
 }
 
@@ -175,7 +167,7 @@ fun GenreTrackItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = formatDuration(track.duration),
+                        text = FormatUtils.formatDuration(track.duration),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

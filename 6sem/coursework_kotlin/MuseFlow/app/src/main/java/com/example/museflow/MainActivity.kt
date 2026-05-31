@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,7 +35,6 @@ import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
 import com.example.museflow.services.PlaybackService
 import com.example.museflow.ui.theme.MuseFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val sharedPrefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("settings", MODE_PRIVATE)
 
         // Запрос разрешения на уведомления
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -84,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
                 val savedToken = remember { tokenManager.getToken() }
                 var isAuthenticated by remember {
-                    mutableStateOf(savedToken != null && savedToken!!.isNotEmpty())
+                    mutableStateOf(savedToken != null && savedToken.isNotEmpty())
                 }
                 var currentTrack by remember { mutableStateOf<Track?>(null) }
                 var playlistTracks by remember { mutableStateOf<List<Track>>(emptyList()) }
@@ -98,7 +96,7 @@ class MainActivity : ComponentActivity() {
                         val authViewModel: AuthViewModel = hiltViewModel()
                         AuthScreen(
                             authViewModel = authViewModel,
-                            onSuccess = { token ->
+                            onSuccess = {
                                 isAuthenticated = true
                                 // Принудительная загрузка данных после входа
                                 catalogViewModel.loadTracks()

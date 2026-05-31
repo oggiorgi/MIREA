@@ -31,14 +31,14 @@ interface ApiService {
     suspend fun createPlaylist(@Body request: CreatePlaylistRequest): PlaylistDto
 
     @PUT("/playlists/{id}")
-    suspend fun updatePlaylist(@Path("id") id: Int, @Body request: UpdatePlaylistRequest): String
+    suspend fun updatePlaylist(@Path("id") id: Int, @Body request: UpdatePlaylistRequest): Response<Unit>
 
     @DELETE("/playlists/{id}")
-    suspend fun deletePlaylist(@Path("id") id: Int): String
+    suspend fun deletePlaylist(@Path("id") id: Int): Response<Unit>
 
     @POST("/playlists/{id}/tracks")
     suspend fun addTrackToPlaylist(@Path("id") playlistId: Int, @Body request: AddTrackRequest): Response<Unit>
 
     @DELETE("/playlists/{id}/tracks/{trackId}")
-    suspend fun removeTrackFromPlaylist(@Path("id") playlistId: Int, @Path("trackId") trackId: Int): String
+    suspend fun removeTrackFromPlaylist(@Path("id") playlistId: Int, @Path("trackId") trackId: Int): Response<Unit>
 }

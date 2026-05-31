@@ -7,9 +7,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
-import com.example.museflow.presentation.ui.catalog.formatDuration
+import com.example.museflow.utils.FormatUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +76,7 @@ fun PlaylistDetailScreen(
                         )
                         displayPlaylist?.let {
                             Text(
-                                text = "${it.tracks.size} ${getTracksText(it.tracks.size)}",
+                                text = "${it.tracks.size} ${FormatUtils.getTracksText(it.tracks.size)}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -85,7 +85,7 @@ fun PlaylistDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,7 +116,7 @@ fun PlaylistDetailScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        Icons.Default.PlaylistPlay,
+                        Icons.AutoMirrored.Filled.PlaylistPlay,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.outline
@@ -205,7 +205,7 @@ fun PlaylistTrackItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = formatDuration(track.duration),
+                    text = FormatUtils.formatDuration(track.duration),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
@@ -222,13 +222,5 @@ fun PlaylistTrackItem(
                 )
             }
         }
-    }
-}
-
-fun getTracksText(count: Int): String {
-    return when {
-        count % 10 == 1 && count % 100 != 11 -> "трек"
-        count % 10 in 2..4 && (count % 100 < 10 || count % 100 > 20) -> "трека"
-        else -> "треков"
     }
 }

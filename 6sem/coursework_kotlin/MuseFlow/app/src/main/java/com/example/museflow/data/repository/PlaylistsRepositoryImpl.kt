@@ -30,11 +30,13 @@ class PlaylistsRepositoryImpl(
     }
 
     override suspend fun updatePlaylist(playlistId: Int, newName: String) {
-        api.updatePlaylist(playlistId, UpdatePlaylistRequest(newName))
+        val response = api.updatePlaylist(playlistId, UpdatePlaylistRequest(newName))
+        if (!response.isSuccessful) throw HttpException(response)
     }
 
     override suspend fun deletePlaylist(playlistId: Int) {
-        api.deletePlaylist(playlistId)
+        val response = api.deletePlaylist(playlistId)
+        if (!response.isSuccessful) throw HttpException(response)
     }
 
     override suspend fun addTrackToPlaylist(playlistId: Int, trackId: Int): Boolean {
@@ -51,7 +53,8 @@ class PlaylistsRepositoryImpl(
     }
 
     override suspend fun removeTrackFromPlaylist(playlistId: Int, trackId: Int) {
-        api.removeTrackFromPlaylist(playlistId, trackId)
+        val response = api.removeTrackFromPlaylist(playlistId, trackId)
+        if (!response.isSuccessful) throw HttpException(response)
     }
 }
 

@@ -20,9 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
+import com.example.museflow.utils.FormatUtils
 
 @Composable
 fun PlaylistsScreen(
@@ -133,7 +133,7 @@ fun PlaylistItem(
                 )
                 val trackCount = remember(playlist.tracks.size) { playlist.tracks.size }
                 Text(
-                    text = "$trackCount ${getTracksText(trackCount)}",
+                    text = "$trackCount ${FormatUtils.getTracksText(trackCount)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -202,7 +202,6 @@ fun CreatePlaylistDialog(
 
 // ==================== PREVIEWS ====================
 
-// Preview для элемента плейлиста
 @Preview(showBackground = true, name = "Playlist Item Preview")
 @Composable
 fun PlaylistItemPreview() {
@@ -235,7 +234,6 @@ fun PlaylistItemPreview() {
     }
 }
 
-// Preview для списка плейлистов (Success состояние)
 @Preview(showBackground = true, name = "Playlists Screen Success Preview")
 @Composable
 fun PlaylistsScreenSuccessPreview() {
@@ -308,7 +306,6 @@ fun PlaylistsScreenSuccessPreview() {
     }
 }
 
-// Preview для пустого состояния
 @Preview(showBackground = true, name = "Empty Playlists Preview")
 @Composable
 fun EmptyPlaylistsPreview() {
@@ -333,7 +330,6 @@ fun EmptyPlaylistsPreview() {
     }
 }
 
-// Preview для состояния загрузки
 @Preview(showBackground = true, name = "Loading State Preview")
 @Composable
 fun PlaylistsLoadingPreview() {
@@ -352,7 +348,6 @@ fun PlaylistsLoadingPreview() {
     }
 }
 
-// Preview для диалога создания плейлиста
 @Preview(showBackground = true, name = "Create Playlist Dialog Preview")
 @Composable
 fun CreatePlaylistDialogPreview() {
