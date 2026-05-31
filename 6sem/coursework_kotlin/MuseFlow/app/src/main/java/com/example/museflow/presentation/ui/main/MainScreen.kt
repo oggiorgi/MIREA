@@ -135,7 +135,8 @@ fun MainScreen(
                             }
                         }
                     },
-                    viewModel = catalogViewModel
+                    viewModel = catalogViewModel,
+                    tokenManager = tokenManager
                 )
             }
             composable("playlists") {

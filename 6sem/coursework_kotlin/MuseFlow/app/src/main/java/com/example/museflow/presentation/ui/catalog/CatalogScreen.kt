@@ -44,12 +44,13 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 // Класс для управления историей поиска
-class SearchHistoryManager(context: Context) {
+class SearchHistoryManager(context: Context, private val username: String?) {
     private val prefs = context.getSharedPreferences("search_history", Context.MODE_PRIVATE)
     private val gson = Gson()
+    private val historyKey = if (username != null) "history_$username" else "history_guest"
 
     fun getHistory(): List<String> {
-        val json = prefs.getString("history", "[]") ?: "[]"
+        val json = prefs.getString(historyKey, "[]") ?: "[]"
         val type = object : TypeToken<List<String>>() {}.type
         return gson.fromJson(json, type)
     }
@@ -61,11 +62,18 @@ class SearchHistoryManager(context: Context) {
         history.add(0, query)
         if (history.size > 10) history.removeAt(10)
         val json = gson.toJson(history)
-        prefs.edit().putString("history", json).apply()
+        prefs.edit().putString(historyKey, json).apply()
+    }
+
+    fun removeQuery(query: String) {
+        val history = getHistory().toMutableList()
+        history.remove(query)
+        val json = gson.toJson(history)
+        prefs.edit().putString(historyKey, json).apply()
     }
 
     fun clearHistory() {
-        prefs.edit().putString("history", "[]").apply()
+        prefs.edit().putString(historyKey, "[]").apply()
     }
 }
 
@@ -75,12 +83,14 @@ fun CatalogScreen(
     onGenreClick: (String) -> Unit,
     playlists: List<Playlist> = emptyList(),
     onAddToPlaylist: (Int, Int) -> Unit,
-    viewModel: CatalogViewModel
+    viewModel: CatalogViewModel,
+    tokenManager: com.example.museflow.data.network.auth.TokenManager
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val searchHistoryManager = remember { SearchHistoryManager(context) }
+    val username = remember { tokenManager.getUsername() }
+    val searchHistoryManager = remember(username) { SearchHistoryManager(context, username) }
 
     // Объявляем все переменные состояния
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -94,6 +104,15 @@ fun CatalogScreen(
     val currentTracks = when (state) {
         is CatalogState.Success -> (state as CatalogState.Success).tracks
         else -> emptyList()
+    }
+
+    // Обертка для клика по треку, чтобы добавлять в историю
+    val onTrackClickWithHistory: (Track) -> Unit = { track ->
+        if (searchQuery.isNotBlank()) {
+            searchHistoryManager.addQuery(searchQuery)
+            searchHistory = searchHistoryManager.getHistory()
+        }
+        onTrackClick(track, currentTracks)
     }
 
     LaunchedEffect(selectedTrackId) {
@@ -119,10 +138,8 @@ fun CatalogScreen(
             onValueChange = { query ->
                 searchQuery = query
                 viewModel.search(query)
-                if (query.isNotBlank()) {
-                    searchHistoryManager.addQuery(query)
-                    showHistory = false
-                }
+                // Удаляем автоматическое добавление в историю при вводе
+                showHistory = query.isEmpty() && isSearchFocused && searchHistory.isNotEmpty()
             },
             label = { Text("Поиск") },
             modifier = Modifier
@@ -130,6 +147,12 @@ fun CatalogScreen(
                 .padding(16.dp)
                 .onFocusChanged { focusState ->
                     isSearchFocused = focusState.isFocused
+                    if (focusState.isFocused && searchQuery.isEmpty()) {
+                        searchHistory = searchHistoryManager.getHistory()
+                        showHistory = searchHistory.isNotEmpty()
+                    } else {
+                        showHistory = false
+                    }
                 },
             singleLine = true,
             trailingIcon = {
@@ -138,6 +161,11 @@ fun CatalogScreen(
                         searchQuery = ""
                         viewModel.search("")
                         keyboardController?.hide()
+                        // Показываем историю после очистки, если есть фокус
+                        if (isSearchFocused) {
+                            searchHistory = searchHistoryManager.getHistory()
+                            showHistory = searchHistory.isNotEmpty()
+                        }
                     }) {
                         Icon(Icons.Default.Clear, contentDescription = "Очистить")
                     }
@@ -151,8 +179,10 @@ fun CatalogScreen(
                 onSearch = {
                     if (searchQuery.isNotBlank()) {
                         searchHistoryManager.addQuery(searchQuery)
+                        searchHistory = searchHistoryManager.getHistory()
                     }
                     keyboardController?.hide()
+                    showHistory = false
                 }
             )
         )
@@ -309,7 +339,7 @@ fun CatalogScreen(
                             item {
                                 DailyPlaylistSection(
                                     tracks = dailyPlaylistTracks,
-                                    onTrackClick = { track -> onTrackClick(track, currentTracks) },
+                                    onTrackClick = onTrackClickWithHistory,
                                     onAddToPlaylist = { trackId ->
                                         selectedTrackId = trackId
                                     }
@@ -322,7 +352,7 @@ fun CatalogScreen(
                                 GenreFolderSection(
                                     genreName = genre,
                                     tracks = genreTracks,
-                                    onTrackClick = { track -> onTrackClick(track, currentTracks) },
+                                    onTrackClick = onTrackClickWithHistory,
                                     onGenreClick = { onGenreClick(genre) },
                                     onAddToPlaylist = { trackId ->
                                         selectedTrackId = trackId
