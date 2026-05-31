@@ -125,7 +125,11 @@ fun CatalogScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
         // Поле поиска
         OutlinedTextField(
             value = searchQuery,

@@ -95,7 +95,7 @@ fun MainScreen(
         NavHost(
             navController = bottomNavController,
             startDestination = "catalog",
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             composable("catalog") {
                 CatalogScreen(

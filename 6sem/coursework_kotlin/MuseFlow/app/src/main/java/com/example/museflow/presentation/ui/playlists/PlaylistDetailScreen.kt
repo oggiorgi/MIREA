@@ -92,7 +92,8 @@ fun PlaylistDetailScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         // Показываем индикатор только если данных ЕЩЕ НЕТ СОВСЕМ
         if (displayPlaylist == null && state is PlaylistsState.Loading) {

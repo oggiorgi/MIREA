@@ -59,7 +59,8 @@ fun GenreTracksScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         if (tracks.isEmpty()) {
             Box(

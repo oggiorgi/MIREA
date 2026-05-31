@@ -44,11 +44,13 @@ fun PlaylistsScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Создать плейлист")
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(paddingValues)
         ) {
             when (state) {
