@@ -28,7 +28,6 @@ import com.example.museflow.domain.repository.TracksRepository
 import com.example.museflow.presentation.ui.auth.AuthScreen
 import com.example.museflow.presentation.ui.auth.AuthViewModel
 import com.example.museflow.presentation.ui.catalog.CatalogViewModel
-import com.example.museflow.presentation.ui.genre.GenreTracksScreen
 import com.example.museflow.presentation.ui.main.MainScreen
 import com.example.museflow.presentation.ui.player.PlayerScreen
 import com.example.museflow.presentation.ui.playlists.PlaylistDetailScreen
@@ -77,7 +76,7 @@ class MainActivity : ComponentActivity() {
             }
 
             MuseFlowTheme(darkTheme = isDarkTheme) {
-                val navController = rememberNavController()
+                val rootNavController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
 
                 val catalogViewModel: CatalogViewModel = hiltViewModel()
@@ -91,7 +90,7 @@ class MainActivity : ComponentActivity() {
                 var playlistTracks by remember { mutableStateOf<List<Track>>(emptyList()) }
 
                 NavHost(
-                    navController = navController,
+                    navController = rootNavController,
                     startDestination = if (isAuthenticated) "main" else "auth",
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -105,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                 catalogViewModel.loadTracks()
                                 playlistsViewModel.loadPlaylists()
                                 
-                                navController.navigate("main") {
+                                rootNavController.navigate("main") {
                                     popUpTo("auth") { inclusive = true }
                                 }
                             }
@@ -118,13 +117,10 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToPlayer = { track, tracks ->
                                     currentTrack = track
                                     playlistTracks = tracks
-                                    navController.navigate("player/${track.id}")
+                                    rootNavController.navigate("player/${track.id}")
                                 },
                                 onNavigateToPlaylist = { playlistId ->
-                                    navController.navigate("playlist/$playlistId")
-                                },
-                                onNavigateToGenre = { genre ->
-                                    navController.navigate("genre/$genre")
+                                    rootNavController.navigate("playlist/$playlistId")
                                 },
                                 coroutineScope = coroutineScope,
                                 tokenManager = tokenManager,
@@ -141,7 +137,7 @@ class MainActivity : ComponentActivity() {
                                         tracksRepository.clearCache()
                                     }
                                     isAuthenticated = false
-                                    navController.navigate("auth") {
+                                    rootNavController.navigate("auth") {
                                         popUpTo("main") { inclusive = true }
                                     }
                                 },
@@ -167,51 +163,23 @@ class MainActivity : ComponentActivity() {
                         route = "playlist/{playlistId}",
                         arguments = listOf(navArgument("playlistId") { type = NavType.IntType })
                     ) { backStackEntry ->
-                        val playlistId = backStackEntry.arguments?.getInt("playlistId")
+                        val playlistId = backStackEntry.arguments?.getInt("playlistId") ?: return@composable
 
-                        val playlistsState by playlistsViewModel.state.collectAsState()
-
-                        val playlist = remember(playlistsState, playlistId) {
-                            if (playlistsState is PlaylistsState.Success && playlistId != null) {
-                                (playlistsState as PlaylistsState.Success).playlists.find { it.id == playlistId }
-                            } else null
-                        }
-
-                        LaunchedEffect(playlistId) {
-                            playlistsViewModel.loadPlaylists()
-                        }
-
-                        if (playlist != null && playlistId != null) {
-                            PlaylistDetailScreen(
-                                playlist = playlist,
-                                viewModel = playlistsViewModel,
-                                onTrackClick = { track ->
-                                    currentTrack = track
-                                    playlistTracks = playlist.tracks
-                                    navController.navigate("player/${track.id}")
-                                },
-                                onBack = { navController.popBackStack() }
-                            )
-                        } else if (playlistsState !is PlaylistsState.Loading) {
-                            LaunchedEffect(Unit) {
-                                navController.popBackStack()
-                            }
-                        }
-                    }
-
-                    composable("genre/{genreName}") { backStackEntry ->
-                        val genreName = backStackEntry.arguments?.getString("genreName") ?: ""
-                        val tracks = catalogViewModel.getTracksByGenre()[genreName] ?: emptyList()
-
-                        GenreTracksScreen(
-                            genreName = genreName,
-                            tracks = tracks,
+                        PlaylistDetailScreen(
+                            playlistId = playlistId,
+                            viewModel = playlistsViewModel,
                             onTrackClick = { track ->
                                 currentTrack = track
-                                playlistTracks = tracks
-                                navController.navigate("player/${track.id}")
+                                // Ищем треки в актуальном стейте Success
+                                val state = playlistsViewModel.state.value
+                                val playlist = if (state is PlaylistsState.Success) {
+                                    state.playlists.find { it.id == playlistId }
+                                } else null
+                                
+                                playlistTracks = playlist?.tracks ?: emptyList()
+                                rootNavController.navigate("player/${track.id}")
                             },
-                            onBack = { navController.popBackStack() }
+                            onBack = { rootNavController.popBackStack() }
                         )
                     }
 
@@ -227,28 +195,29 @@ class MainActivity : ComponentActivity() {
                                     val currentIndex = playlistTracks.indexOfFirst { it.id == track.id }
                                     if (currentIndex + 1 < playlistTracks.size) {
                                         currentTrack = playlistTracks[currentIndex + 1]
-                                        navController.popBackStack()
-                                        navController.navigate("player/${currentTrack?.id}")
+                                        rootNavController.popBackStack()
+                                        rootNavController.navigate("player/${currentTrack?.id}")
                                     }
                                 },
                                 onPrevious = {
                                     val currentIndex = playlistTracks.indexOfFirst { it.id == track.id }
                                     if (currentIndex - 1 >= 0) {
                                         currentTrack = playlistTracks[currentIndex - 1]
-                                        navController.popBackStack()
-                                        navController.navigate("player/${currentTrack?.id}")
+                                        rootNavController.popBackStack()
+                                        rootNavController.navigate("player/${currentTrack?.id}")
                                     }
                                 },
                                 onBack = {
-                                    navController.popBackStack()
+                                    rootNavController.popBackStack()
                                 }
                             )
                         } else {
-                            navController.popBackStack()
+                            rootNavController.popBackStack()
                         }
                     }
                 }
             }
+
         }
     }
 

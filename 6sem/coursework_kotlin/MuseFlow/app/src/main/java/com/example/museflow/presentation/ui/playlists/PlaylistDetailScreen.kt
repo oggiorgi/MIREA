@@ -29,33 +29,41 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailScreen(
-    playlist: Playlist,
+    playlistId: Int,
     viewModel: PlaylistsViewModel,
     onTrackClick: (Track) -> Unit,
     onBack: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-
-    // ✅ Убираем remember(playlist) - пусть tracks всегда берется из state
-    var tracks by remember { mutableStateOf(playlist.tracks) }
-
-    // ✅ Подписываемся на обновления из ViewModel
     val state by viewModel.state.collectAsState()
 
-    // ✅ Обновляем tracks при каждом изменении state
-    LaunchedEffect(state) {
+    // 1. Храним "последний известный хороший" плейлист, чтобы экран не закрывался при Loading
+    var lastKnownPlaylist by remember { mutableStateOf<Playlist?>(null) }
+
+    // 2. Ищем плейлист в текущем стейте (только если Success)
+    val currentPlaylistFromState = remember(state) {
         if (state is PlaylistsState.Success) {
-            val updatedPlaylist = (state as PlaylistsState.Success).playlists.find { it.id == playlist.id }
-            if (updatedPlaylist != null) {
-                tracks = updatedPlaylist.tracks
-            }
+            (state as PlaylistsState.Success).playlists.find { it.id == playlistId }
+        } else null
+    }
+
+    // 3. Обновляем локальную копию только когда данные действительно пришли
+    LaunchedEffect(currentPlaylistFromState) {
+        if (currentPlaylistFromState != null) {
+            lastKnownPlaylist = currentPlaylistFromState
         }
     }
 
-    // ✅ Также обновляем при изменении самого playlist (на случай, если он придет обновленный)
-    LaunchedEffect(playlist) {
-        tracks = playlist.tracks
+    // 4. Логика выхода (только если плейлист реально удален из базы)
+    LaunchedEffect(currentPlaylistFromState, state) {
+        // Если мы в Success, а плейлиста нет – значит он удален
+        if (state is PlaylistsState.Success && currentPlaylistFromState == null) {
+            onBack()
+        }
     }
+
+    // Используем lastKnownPlaylist для отрисовки, это обеспечит стабильность UI
+    val displayPlaylist = lastKnownPlaylist
 
     Scaffold(
         topBar = {
@@ -63,14 +71,16 @@ fun PlaylistDetailScreen(
                 title = {
                     Column {
                         Text(
-                            text = playlist.name,
+                            text = displayPlaylist?.name ?: "Плейлист",
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = "${tracks.size} ${getTracksText(tracks.size)}",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        displayPlaylist?.let {
+                            Text(
+                                text = "${it.tracks.size} ${getTracksText(it.tracks.size)}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
@@ -84,7 +94,20 @@ fun PlaylistDetailScreen(
             )
         }
     ) { paddingValues ->
-        if (tracks.isEmpty()) {
+        // Показываем индикатор только если данных ЕЩЕ НЕТ СОВСЕМ
+        if (displayPlaylist == null && state is PlaylistsState.Loading) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } 
+        // Если данных нет и загрузка кончилась (плейлист удален)
+        else if (displayPlaylist == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                Text("Плейлист удален", color = MaterialTheme.colorScheme.error)
+            }
+        }
+        // Если плейлист найден, но треков в нем нет
+        else if (displayPlaylist.tracks.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -104,30 +127,24 @@ fun PlaylistDetailScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.outline
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Добавьте треки из каталога",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.outline
-                    )
                 }
             }
-        } else {
+        } 
+        // Отображаем список треков
+        else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(tracks, key = { it.id }) { track ->
+                items(displayPlaylist.tracks, key = { it.id }) { track ->
                     PlaylistTrackItem(
                         track = track,
                         onClick = { onTrackClick(track) },
                         onRemove = {
-                            // ✅ Оптимистичное обновление
-                            tracks = tracks.filter { it.id != track.id }
                             coroutineScope.launch {
-                                viewModel.removeTrackFromPlaylist(playlist.id, track.id)
+                                viewModel.removeTrackFromPlaylist(playlistId, track.id)
                             }
                         }
                     )
@@ -136,6 +153,7 @@ fun PlaylistDetailScreen(
         }
     }
 }
+
 @Composable
 fun PlaylistTrackItem(
     track: Track,

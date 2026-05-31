@@ -22,6 +22,7 @@ import com.example.museflow.data.network.auth.TokenManager
 import com.example.museflow.domain.models.Track
 import com.example.museflow.presentation.ui.catalog.CatalogScreen
 import com.example.museflow.presentation.ui.catalog.CatalogViewModel
+import com.example.museflow.presentation.ui.genre.GenreTracksScreen
 import com.example.museflow.presentation.ui.playlists.PlaylistsScreen
 import com.example.museflow.presentation.ui.playlists.PlaylistsState
 import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
@@ -32,7 +33,6 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onNavigateToPlayer: (Track, List<Track>) -> Unit,
     onNavigateToPlaylist: (Int) -> Unit,
-    onNavigateToGenre: (String) -> Unit,
     coroutineScope: CoroutineScope,
     tokenManager: TokenManager,
     onLogout: () -> Unit,
@@ -42,7 +42,7 @@ fun MainScreen(
     catalogViewModel: CatalogViewModel,
     playlistsViewModel: PlaylistsViewModel
 ) {
-    val navController = rememberNavController()
+    val bottomNavController = rememberNavController()
     val context = LocalContext.current
 
     val playlistsState by playlistsViewModel.state.collectAsState()
@@ -55,12 +55,12 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 NavigationBarItem(
                     selected = currentRoute == "catalog",
-                    onClick = { navController.navigate("catalog") },
+                    onClick = { bottomNavController.navigate("catalog") },
                     label = { Text("Каталог") },
                     icon = { Icon(Icons.Default.MusicNote, null) },
                     colors = NavigationBarItemDefaults.colors(
@@ -71,7 +71,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     selected = currentRoute == "playlists",
-                    onClick = { navController.navigate("playlists") },
+                    onClick = { bottomNavController.navigate("playlists") },
                     label = { Text("Плейлисты") },
                     icon = { Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null) },
                     colors = NavigationBarItemDefaults.colors(
@@ -82,7 +82,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     selected = currentRoute == "profile",
-                    onClick = { navController.navigate("profile") },
+                    onClick = { bottomNavController.navigate("profile") },
                     label = { Text("Профиль") },
                     icon = { Icon(Icons.Default.Person, null) },
                     colors = NavigationBarItemDefaults.colors(
@@ -95,7 +95,7 @@ fun MainScreen(
         }
     ) { paddingValues ->
         NavHost(
-            navController = navController,
+            navController = bottomNavController,
             startDestination = "catalog",
             modifier = Modifier.padding(paddingValues)
         ) {
@@ -105,7 +105,7 @@ fun MainScreen(
                         onNavigateToPlayer(track, allTracks)  // ← передаём ВСЕ треки
                     },
                     onGenreClick = { genre ->
-                        onNavigateToGenre(genre)
+                        bottomNavController.navigate("genre/$genre")
                     },
                     playlists = playlists,
                     onAddToPlaylist = { playlistId, trackId ->
@@ -155,6 +155,20 @@ fun MainScreen(
                     onClearCache = onClearCache,
                     isDarkTheme = isDarkTheme,
                     onThemeToggle = onThemeToggle
+                )
+            }
+
+            composable("genre/{genreName}") { backStackEntry ->
+                val genreName = backStackEntry.arguments?.getString("genreName") ?: ""
+                val tracks = catalogViewModel.getTracksByGenre()[genreName] ?: emptyList()
+
+                GenreTracksScreen(
+                    genreName = genreName,
+                    tracks = tracks,
+                    onTrackClick = { track ->
+                        onNavigateToPlayer(track, tracks)
+                    },
+                    onBack = { bottomNavController.popBackStack() }
                 )
             }
         }
