@@ -82,7 +82,7 @@ fun PlayerScreen(
                             isPlaying = it.isPlaying()
                             currentPosition = it.getCurrentPosition()
                             
-                            // ✅ Обновляем длительность только если она пришла корректная
+                            // Обновляем длительность только если она пришла корректная
                             val duration = it.getDuration()
                             if (duration > 0) {
                                 // Если разница с текущим временем больше 2 секунд или мы еще не зафиксировали время
@@ -177,7 +177,7 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // ==================== SEEK BAR ====================
+            // ==================== seek bar ====================
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -218,7 +218,7 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ==================== КНОПКИ УПРАВЛЕНИЯ ====================
+            // ==================== кнопки управления ====================
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,

@@ -381,7 +381,7 @@ fun CatalogScreen(
     }
 }
 
-// ==================== НОВАЯ СЕКЦИЯ ТРЕКОВ ДНЯ ================================================================================
+// ==================== треки дня ================================================================================
 @Composable
 fun DailyPlaylistSection(
     tracks: List<Track>,
@@ -435,7 +435,7 @@ fun DailyPlaylistSection(
             }
         }
 
-        // Индикатор страниц (точки) - теперь будет виден!
+        // Индикатор страниц (точки)
         if (groupedTracks.size > 1) {
             Row(
                 modifier = Modifier
@@ -574,7 +574,7 @@ fun DailyPlaylistPageItem(
         }
     }
 }
-// ==================== ОСТАЛЬНЫЕ КОМПОНЕНТЫ ====================================================================================================
+// ==================== остальные компоненты ====================================================================================================
 
 @Composable
 fun GenreFolderSection(
@@ -653,7 +653,7 @@ fun GenreTrackCard(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface  // ← только это, без background
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -684,7 +684,7 @@ fun GenreTrackCard(
                         .size(28.dp)
                         .padding(4.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),  // ← адаптивный
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                     tonalElevation = 0.dp
                 ) {
                     IconButton(

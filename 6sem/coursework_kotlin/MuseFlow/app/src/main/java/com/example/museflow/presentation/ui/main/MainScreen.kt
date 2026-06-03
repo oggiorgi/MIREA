@@ -140,8 +140,8 @@ fun MainScreen(
             composable("playlists") {
                 PlaylistsScreen(
                     onPlaylistClick = { playlist ->
-                        // Переход должен обрабатываться в MainActivity, но здесь мы просто передаём наружу
-                        onNavigateToPlaylist(playlist.id)  // ← нужно добавить этот callback
+                        // Переход обрабатывается в MainActivity, но здесь мы просто передаём наружу
+                        onNavigateToPlaylist(playlist.id)
                     },
                     viewModel = playlistsViewModel
                 )

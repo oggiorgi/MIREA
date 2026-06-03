@@ -186,7 +186,7 @@ fun GenreTrackItem(
     }
 }
 
-// ==================== PREVIEWS ====================
+// ==================== preview ====================
 
 @Preview(showBackground = true, name = "Genre Tracks Screen Preview")
 @Composable
