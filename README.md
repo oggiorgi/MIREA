@@ -9,13 +9,16 @@
 ### [📁 **6sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/Kotlin)
 Разработка клиент-серверных мобильных приложений (часть 1/1) [II.25-26]
 
+### [📁 **6sem_kotlin_coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/coursework_kotlin)
+Разработка клиент-серверных мобильных приложений (КР/КП)
 
+# Работа с базами данных <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="PostgreSQL" width="30"/> ![Cassandra](https://img.shields.io/badge/Cassandra-1287B1?style=flat&logo=apachecassandra&logoColor=white)
 
-# Работа с базами данных          <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="PostgreSQL" width="30"/>
 ### [📁 **4sem_PBD** ↗](https://github.com/oggiorgi/MIREA/tree/main/4sem/PBD)
 Проектирование баз данных (часть 1/1) [II.24-25]
-
 
 ### [📁 **5sem_RBD** ↗](https://github.com/oggiorgi/MIREA/tree/main/5sem/RBD)
 Разработка баз данных (часть 1/1) [I.25-26]
 
+### [📁 **6sem_RSUBD** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/RSUBD)
+Распределенные системы управления базами данных (часть 1/1) [II.25-26]
