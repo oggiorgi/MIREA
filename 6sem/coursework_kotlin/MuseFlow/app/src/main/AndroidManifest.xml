@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <attribution
+        android:tag="playback"
+        android:label="@string/playback_attribution_label" />
+
     <application
         android:name=".MuseFlowApplication"
         android:allowBackup="true"

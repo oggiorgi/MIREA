@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MuseFlow</string>
+    <string name="playback_attribution_label">Воспроизведение музыки</string>
 </resources>
