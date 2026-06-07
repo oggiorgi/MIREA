@@ -20,6 +20,11 @@ import com.example.museflow.MainActivity
 import com.example.museflow.domain.models.Track
 import kotlinx.coroutines.*
 
+/*
+ * Фоновый сервис для воспроизведения аудио с использованием Media3.
+ * Управляет жизненным циклом ExoPlayer и MediaSession, обеспечивая 
+ * работу плеера даже при закрытом приложении.
+ */
 class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
@@ -237,6 +242,10 @@ class PlaybackService : MediaSessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
+    /*
+     * Очистка ресурсов при остановке сервиса.
+     * Отменяет корутины и освобождает плеер и сессию.
+     */
     override fun onDestroy() {
         serviceScope.cancel()
         player?.release()

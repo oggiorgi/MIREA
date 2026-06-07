@@ -26,6 +26,10 @@ import com.example.museflow.domain.models.Track
 import com.example.museflow.utils.FormatUtils
 import kotlinx.coroutines.launch
 
+/*
+ * Экран деталей плейлиста. 
+ * Отображает список треков конкретного плейлиста и позволяет управлять ими (прослушивание, удаление).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailScreen(
@@ -37,7 +41,12 @@ fun PlaylistDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     val state by viewModel.state.collectAsState()
 
-    // 1. Храним "последний известный хороший" плейлист, чтобы экран не закрывался при Loading
+    /* 
+     * ПАТТЕРН "Стабильный UI":
+     * Мы кэшируем последний успешно загруженный плейлист в локальной переменной. 
+     * Это предотвращает мерцание или пустой экран в моменты, когда ViewModel 
+     * переключается в состояние Loading (например, при обновлении после удаления трека).
+     */
     var lastKnownPlaylist by remember { mutableStateOf<Playlist?>(null) }
 
     // 2. Ищем плейлист в текущем стейте (только если Success)
@@ -54,9 +63,11 @@ fun PlaylistDetailScreen(
         }
     }
 
-    // 4. Логика выхода (только если плейлист реально удален из базы)
+    /*
+     * Синхронизация данных: если в общем списке плейлистов текущий плейлист 
+     * больше не найден, значит он был удален, и мы должны закрыть экран.
+     */
     LaunchedEffect(currentPlaylistFromState, state) {
-        // Если мы в Success, а плейлиста нет – значит он удален
         if (state is PlaylistsState.Success && currentPlaylistFromState == null) {
             onBack()
         }

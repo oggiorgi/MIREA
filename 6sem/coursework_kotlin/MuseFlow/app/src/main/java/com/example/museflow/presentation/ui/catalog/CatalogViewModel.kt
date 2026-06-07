@@ -12,12 +12,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/*
+ * Состояния экрана каталога. 
+ * Используется Sealed-класс для обеспечения типобезопасной обработки 
+ * различных стадий загрузки данных в UI.
+ */
 sealed class CatalogState {
     object Loading : CatalogState()
     data class Success(val tracks: List<Track>) : CatalogState()
     data class Error(val message: String) : CatalogState()
 }
 
+/*
+ * ViewModel для экрана каталога. 
+ * Отвечает за загрузку списка треков, поиск и управление состоянием UI (CatalogState).
+ */
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
     private val getTracksUseCase: GetTracksUseCase,
@@ -54,6 +63,12 @@ class CatalogViewModel @Inject constructor(
             lastSearchQuery = query
         }
 
+        /*
+         * ЛОГИКА ПОИСКА:
+         * Если запрос пустой, мы просто сбрасываем состояние к исходному списку `allTracks`, 
+         * который хранится в памяти. Это позволяет избежать лишних сетевых вызовов при 
+         * очистке строки поиска пользователем.
+         */
         if (query.isBlank()) {
             _state.value = CatalogState.Success(allTracks)
             return

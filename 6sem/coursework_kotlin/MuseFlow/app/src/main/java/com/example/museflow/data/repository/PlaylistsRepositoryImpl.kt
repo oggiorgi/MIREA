@@ -10,6 +10,10 @@ import com.example.museflow.domain.repository.PlaylistsRepository
 import kotlin.collections.map
 import retrofit2.HttpException
 
+/*
+ * Репозиторий для управления плейлистами.
+ * Инкапсулирует логику сетевых запросов и обработку специфических HTTP ошибок.
+ */
 class PlaylistsRepositoryImpl(
     private val api: ApiService
 ) : PlaylistsRepository {
@@ -21,6 +25,10 @@ class PlaylistsRepositoryImpl(
         return try {
             api.createPlaylist(CreatePlaylistRequest(name, coverUrl)).toDomain()
         } catch (e: HttpException) {
+            /* 
+             * Обработка конфликта (409): если плейлист с таким именем уже есть, 
+             * выбрасываем информативное исключение для отображения в UI.
+             */
             if (e.code() == 409) {
                 throw Exception("Плейлист с таким именем уже создан")
             } else {
@@ -45,7 +53,7 @@ class PlaylistsRepositoryImpl(
             response.isSuccessful
         } catch (e: HttpException) {
             if (e.code() == 409) {
-                false  // Трек уже в плейлисте
+                false
             } else {
                 throw e
             }

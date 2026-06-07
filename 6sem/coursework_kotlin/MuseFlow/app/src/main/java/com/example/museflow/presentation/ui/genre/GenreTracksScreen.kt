@@ -25,6 +25,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.museflow.domain.models.Track
 import com.example.museflow.utils.FormatUtils
 
+/*
+ * Экран списка треков определенного жанра. 
+ * Позволяет пользователю просматривать отфильтрованную медиатеку и быстро 
+ * запускать воспроизведение выбранных композиций.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenreTracksScreen(

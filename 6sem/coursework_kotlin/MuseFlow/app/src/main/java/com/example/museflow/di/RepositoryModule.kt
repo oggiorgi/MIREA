@@ -15,6 +15,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/*
+ * Модуль внедрения зависимостей для репозиториев. 
+ * Связывает интерфейсы доменного слоя с их конкретными реализациями из слоя данных.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {

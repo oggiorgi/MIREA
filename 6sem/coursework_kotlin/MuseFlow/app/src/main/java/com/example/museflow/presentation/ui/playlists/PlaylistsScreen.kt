@@ -24,6 +24,11 @@ import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.models.Track
 import com.example.museflow.utils.FormatUtils
 
+/*
+ * Экран списка плейлистов пользователя. 
+ * Предоставляет функционал просмотра всех созданных плейлистов, 
+ * их удаления и создания новых через диалоговое окно.
+ */
 @Composable
 fun PlaylistsScreen(
     onPlaylistClick: (Playlist) -> Unit,
@@ -109,6 +114,10 @@ fun PlaylistsScreen(
     }
 }
 
+/*
+ * Элемент списка плейлистов. 
+ * Отображает название и количество треков с правильным склонением числительных.
+ */
 @Composable
 fun PlaylistItem(
     playlist: Playlist,
@@ -147,6 +156,10 @@ fun PlaylistItem(
     }
 }
 
+/*
+ * Диалоговое окно для создания нового плейлиста. 
+ * Реализует автоматический фокус на поле ввода при открытии для удобства пользователя.
+ */
 @Composable
 fun CreatePlaylistDialog(
     onDismiss: () -> Unit,

@@ -10,6 +10,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/*
+ * Модуль внедрения зависимостей для локального хранилища. 
+ * Отвечает за предоставление экземпляра базы данных Room и DAO объектов.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {

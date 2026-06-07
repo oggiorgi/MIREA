@@ -38,6 +38,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
+/*
+ * Главная Activity приложения. Использует Jetpack Compose для UI и Navigation Compose для навигации.
+ * Аннотация @AndroidEntryPoint необходима для внедрения зависимостей через Hilt.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -53,7 +57,10 @@ class MainActivity : ComponentActivity() {
 
         val sharedPrefs = getSharedPreferences("settings", MODE_PRIVATE)
 
-        // Запрос разрешения на уведомления
+        /*
+         * Запрос разрешения на уведомления для Android 13+.
+         * Это необходимо для отображения плеера в панели уведомлений.
+         */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -81,6 +88,10 @@ class MainActivity : ComponentActivity() {
                 val playlistsViewModel: PlaylistsViewModel = hiltViewModel()
 
                 val savedToken = remember { tokenManager.getToken() }
+                
+                /*
+                 * Определение начальной точки навигации на основе наличия токена.
+                 */
                 var isAuthenticated by remember {
                     mutableStateOf(savedToken != null && savedToken.isNotEmpty())
                 }
@@ -98,7 +109,7 @@ class MainActivity : ComponentActivity() {
                             authViewModel = authViewModel,
                             onSuccess = {
                                 isAuthenticated = true
-                                // Принудительная загрузка данных после входа
+                                // Принудительная загрузка данных после успешного входа
                                 catalogViewModel.loadTracks()
                                 playlistsViewModel.loadPlaylists()
                                 
@@ -123,12 +134,14 @@ class MainActivity : ComponentActivity() {
                                 coroutineScope = coroutineScope,
                                 tokenManager = tokenManager,
                                 onLogout = {
+                                    /*
+                                     * Полный сброс состояния приложения при выходе: 
+                                     * очистка токена, остановка сервиса и сброс ViewModel.
+                                     */
                                     tokenManager.clearToken()
-                                    // Останавливаем воспроизведение при логауте
                                     val intent = Intent(this@MainActivity, PlaybackService::class.java)
                                     stopService(intent)
 
-                                    // ✅ Сброс состояния ViewModel
                                     catalogViewModel.resetState()
                                     playlistsViewModel.resetState()
                                     coroutineScope.launch {
@@ -168,7 +181,7 @@ class MainActivity : ComponentActivity() {
                             viewModel = playlistsViewModel,
                             onTrackClick = { track ->
                                 currentTrack = track
-                                // Ищем треки в актуальном стейте Success
+                                // Извлекаем список треков из текущего успешного состояния плейлистов
                                 val state = playlistsViewModel.state.value
                                 val playlist = if (state is PlaylistsState.Success) {
                                     state.playlists.find { it.id == playlistId }

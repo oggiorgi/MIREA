@@ -26,6 +26,17 @@ import com.example.museflow.services.PlaybackService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/*
+ * Экран музыкального плеера.
+ * 
+ * Ключевые механизмы:
+ * 1. Привязка к PlaybackService: экран подключается к фоновому сервису для 
+ *    синхронизации прогресса, управления очередью и получения метаданных треков.
+ * 2. Реактивное обновление прогресса: корутина внутри ServiceConnection 
+ *    опрашивает состояние плеера каждые 500мс.
+ * 3. Независимость управления: команды (play/pause/next) отправляются в сервис 
+ *    через интенты, что позволяет плееру работать независимо от жизни экрана.
+ */
 @Composable
 fun PlayerScreen(
     track: Track,
@@ -66,7 +77,7 @@ fun PlayerScreen(
         isDurationFinal = false // Сбрасываем флаг для нового трека
     }
 
-    // Подключение к сервису для получения состояния
+    // Подключение к сервису для получения состояния и управления
     val connection = remember {
         object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -75,17 +86,18 @@ fun PlayerScreen(
                 playbackService = s
                 serviceBound = true
                 
-                // Начинаем обновлять состояние
+                /*
+                 * Цикл опроса состояния. Обновляет UI-стейт (позиция, длительность, текущий трек)
+                 * пока экран активен и сервис привязан.
+                 */
                 scope.launch {
                     while (serviceBound) {
                         s.let {
                             isPlaying = it.isPlaying()
                             currentPosition = it.getCurrentPosition()
                             
-                            // Обновляем длительность только если она пришла корректная
                             val duration = it.getDuration()
                             if (duration > 0) {
-                                // Если разница с текущим временем больше 2 секунд или мы еще не зафиксировали время
                                 if (!isDurationFinal || Math.abs(currentDuration - duration) > 2000) {
                                     currentDuration = duration
                                     isDurationFinal = true
@@ -94,16 +106,13 @@ fun PlayerScreen(
 
                             val serviceTrack = it.getCurrentTrack()
                             if (serviceTrack != null) {
-                                // Если сменился трек в сервисе (автопереход)
                                 if (currentTrackTitle != serviceTrack.title) {
                                     currentTrackTitle = serviceTrack.title
                                     currentTrackArtist = serviceTrack.artist
                                     currentCoverUrl = serviceTrack.coverUrl
-                                    // Обнуляем флаг фиксации для нового трека
                                     isDurationFinal = false
                                 }
                                 
-                                // Также обновляем длительность из метаданных нового трека если плеер еще не выдал свою
                                 if (!isDurationFinal) {
                                     currentDuration = serviceTrack.duration * 1000L
                                 }

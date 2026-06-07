@@ -37,6 +37,10 @@ class AuthViewModel @Inject constructor(
                 val token = loginUseCase(login, password)
                 _state.value = AuthState.Success(token)
             } catch (e: Exception) {
+                /*
+                 * Специфичная обработка ошибки 400 (Bad Request), которая на данном сервере 
+                 * обычно означает неверные учетные данные.
+                 */
                 val errorMessage = if (e.message?.contains("400") == true) {
                     "Неправильный логин или пароль"
                 } else {

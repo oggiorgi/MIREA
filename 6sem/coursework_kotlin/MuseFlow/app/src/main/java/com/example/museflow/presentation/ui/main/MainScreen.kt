@@ -27,6 +27,11 @@ import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/*
+ * Главный экран приложения после авторизации. 
+ * Реализует структуру с нижней навигацией (Bottom Navigation) и вложенным NavHost 
+ * для переключения между разделами: Каталог, Плейлисты и Профиль.
+ */
 @Composable
 fun MainScreen(
     onNavigateToPlayer: (Track, List<Track>) -> Unit,
@@ -100,13 +105,18 @@ fun MainScreen(
             composable("catalog") {
                 CatalogScreen(
                     onTrackClick = { track, allTracks ->
-                        onNavigateToPlayer(track, allTracks)  // ← передаём ВСЕ треки
+                        onNavigateToPlayer(track, allTracks)
                     },
                     onGenreClick = { genre ->
                         bottomNavController.navigate("genre/$genre")
                     },
                     playlists = playlists,
                     onAddToPlaylist = { playlistId, trackId ->
+                        /*
+                         * Логика добавления трека в плейлист. 
+                         * Используется CoroutineScope для выполнения сетевого запроса 
+                         * и отображения результата через Toast.
+                         */
                         coroutineScope.launch {
                             try {
                                 val added = playlistsViewModel.addTrackToPlaylist(playlistId, trackId)

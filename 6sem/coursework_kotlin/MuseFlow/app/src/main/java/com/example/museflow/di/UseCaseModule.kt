@@ -10,6 +10,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/*
+ * Модуль внедрения зависимостей для бизнес-логики. 
+ * Предоставляет UseCase объекты для использования во ViewModels, следуя Clean Architecture.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object UseCaseModule {

@@ -7,6 +7,14 @@ import com.example.museflow.data.network.models.RegisterRequest
 import com.example.museflow.domain.repository.AuthRepository
 import java.io.IOException
 
+/*
+ * Реализация репозитория авторизации.
+ * Управляет процессами входа и регистрации, а также сохранением 
+ * полученных учетных данных в локальном TokenManager.
+ * 
+ * Особенность: при регистрации выполняется автоматический вход для 
+ * получения JWT токена, что упрощает пользовательский сценарий.
+ */
 class AuthRepositoryImpl(
     private val api: ApiService,
     private val tokenManager: TokenManager

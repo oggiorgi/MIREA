@@ -11,6 +11,11 @@ import com.example.museflow.data.network.models.UpdatePlaylistRequest
 import retrofit2.Response
 import retrofit2.http.*
 
+/*
+ * Интерфейс API приложения. 
+ * Описывает все доступные сетевые эндпоинты для работы с музыкой, 
+ * плейлистами и аутентификацией.
+ */
 interface ApiService {
     @POST("/login")
     suspend fun login(@Body request: LoginRequest): AuthResponse

@@ -10,6 +10,13 @@ import com.example.museflow.domain.repository.TracksRepository
 import kotlin.collections.map
 import java.io.IOException
 
+/*
+ * Реализация репозитория треков с поддержкой офлайн-режима.
+ * 
+ * Стратегия: "Сначала сеть, затем кэш". 
+ * Это позволяет пользователю всегда видеть актуальный контент при наличии интернета, 
+ * но сохраняет работоспособность приложения (чтение ранее загруженных данных) в офлайне.
+ */
 class TracksRepositoryImpl(
     private val api: ApiService,
     private val trackDao: TrackDao
@@ -17,13 +24,15 @@ class TracksRepositoryImpl(
 
     override suspend fun getTracks(): List<Track> {
         return try {
-            // Пытаемся получить с сервера
             val tracksFromApi = api.getTracks().map { it.toDomain() }
-            // Сохраняем в кэш
             trackDao.insertAll(tracksFromApi.map { it.toEntity() })
             tracksFromApi
         } catch (e: IOException) {
-            // Нет интернета - берём из кэша
+            /* 
+             * При сетевой ошибке переключаемся на локальное хранилище. 
+             * Мы выбрасываем исключение только если кэш пуст, чтобы UI мог 
+             * показать пользователю понятное сообщение о невозможности загрузки.
+             */
             val cachedTracks = trackDao.getAllTracks()
             if (cachedTracks.isNotEmpty()) {
                 cachedTracks.map { it.toDomain() }
@@ -35,10 +44,9 @@ class TracksRepositoryImpl(
 
     override suspend fun searchTracks(query: String): List<Track> {
         return try {
-            // Пытаемся искать на сервере
             api.searchTracks(query).map { it.toDomain() }
         } catch (e: IOException) {
-            // Нет интернета - ищем в кэше
+            // Поиск по локальному кэшу в случае отсутствия соединения.
             trackDao.searchTracks(query).map { it.toDomain() }
         }
     }
@@ -48,7 +56,7 @@ class TracksRepositoryImpl(
     }
 }
 
-// Extension function для маппинга DTO в Domain модель
+// Функции расширения для преобразования моделей данных (DTO) в доменные модели
 fun TrackDto.toDomain(): Track = Track(
     id = id,
     title = title,

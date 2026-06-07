@@ -10,10 +10,19 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+/*
+ * Фабрика сетевого клиента. 
+ * Настраивает Retrofit и OkHttpClient для работы с REST API, включая 
+ * логирование и автоматическую обработку JWT токенов.
+ */
 object RetrofitClient {
     private const val BASE_URL = "http://10.0.2.2:8080/"
 
     fun provideApiService(tokenManager: TokenManager, context: Context): ApiService {
+        /*
+         * Интерцептор для автоматического добавления JWT токена в заголовок Authorization.
+         * Это избавляет от необходимости вручную передавать токен в каждом методе ApiService.
+         */
         val authInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
             tokenManager.getToken()?.let { token ->

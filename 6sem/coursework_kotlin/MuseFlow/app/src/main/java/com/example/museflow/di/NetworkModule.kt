@@ -11,6 +11,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/*
+ * Модуль внедрения зависимостей для сетевого слоя. 
+ * Настраивает механизмы авторизации и API-сервисы.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {

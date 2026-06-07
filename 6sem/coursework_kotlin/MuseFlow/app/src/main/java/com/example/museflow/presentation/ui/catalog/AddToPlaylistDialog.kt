@@ -11,6 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.museflow.domain.models.Playlist
 
+/*
+ * Диалоговое окно для выбора плейлиста. 
+ * Позволяет пользователю быстро добавить текущий трек в один из своих плейлистов.
+ */
 @Composable
 fun AddToPlaylistDialog(
     playlists: List<Playlist>,

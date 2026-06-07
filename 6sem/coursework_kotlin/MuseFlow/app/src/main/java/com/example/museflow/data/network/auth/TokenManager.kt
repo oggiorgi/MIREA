@@ -6,6 +6,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/*
+ * Менеджер безопасности и сессий.
+ * Отвечает за защищенное хранение JWT токена и данных профиля пользователя 
+ * в SharedPreferences. Используется во всем приложении для проверки статуса авторизации.
+ */
 @Singleton
 class TokenManager @Inject constructor(
     @ApplicationContext private val context: Context

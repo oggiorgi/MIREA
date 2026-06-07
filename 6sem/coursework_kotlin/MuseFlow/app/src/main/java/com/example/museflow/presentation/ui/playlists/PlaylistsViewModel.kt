@@ -79,7 +79,14 @@ class PlaylistsViewModel @Inject constructor(
     fun removeTrackFromPlaylist(playlistId: Int, trackId: Int) {
         viewModelScope.launch {
             try {
-                // 1. Сначала обновляем локальное состояние (оптимистичное обновление)
+                /*
+                 * СТРАТЕГИЯ: Оптимистичное обновление UI.
+                 * 1. Сначала мы мгновенно обновляем локальный StateFlow, чтобы пользователь 
+                 *    сразу увидел результат (удаление элемента из списка).
+                 * 2. Затем выполняем асинхронный запрос к серверу. 
+                 * 3. В случае провала (catch) — принудительно синхронизируем UI с сервером, 
+                 *    откатывая изменения.
+                 */
                 val currentState = _state.value
                 if (currentState is PlaylistsState.Success) {
                     val updatedPlaylists = currentState.playlists.map { playlist ->
@@ -92,12 +99,10 @@ class PlaylistsViewModel @Inject constructor(
                     _state.value = PlaylistsState.Success(updatedPlaylists)
                 }
 
-                // 2. Затем отправляем запрос на сервер
                 removeTrackFromPlaylistUseCase(playlistId, trackId)
 
             } catch (e: Exception) {
-                // Если ошибка - возвращаем старые данные
-                loadPlaylists() // Откат при ошибке
+                loadPlaylists()
                 _state.value = PlaylistsState.Error(e.message ?: "Ошибка удаления трека")
             }
         }

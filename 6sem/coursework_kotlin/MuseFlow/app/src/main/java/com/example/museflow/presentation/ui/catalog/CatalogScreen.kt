@@ -78,6 +78,14 @@ class SearchHistoryManager(context: Context, private val username: String?) {
     }
 }
 
+/*
+ * Экран каталога. 
+ * 
+ * Логика отображения разделена на три функциональных блока:
+ * 1. Поиск и история: управление вводом пользователя и отображение недавних запросов.
+ * 2. Рекомендации: динамические секции "Треки дня", формируемые на стороне клиента.
+ * 3. Основной контент: группировка медиатеки по жанрам с использованием LazyColumn для оптимизации.
+ */
 @Composable
 fun CatalogScreen(
     onTrackClick: (Track, List<Track>) -> Unit,
@@ -91,6 +99,10 @@ fun CatalogScreen(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val username = remember { tokenManager.getUsername() }
+    
+    /*
+     * Менеджер истории поиска инициализируется с привязкой к текущему пользователю.
+     */
     val searchHistoryManager = remember(username) { SearchHistoryManager(context, username) }
 
     // Объявляем все переменные состояния

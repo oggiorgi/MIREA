@@ -37,6 +37,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 
+/*
+ * Экран авторизации.
+ * Поддерживает два режима: вход и регистрация. Управляет локальным состоянием 
+ * полей ввода и синхронизируется с AuthViewModel для выполнения запросов.
+ */
 @Composable
 fun AuthScreen(
     onSuccess: (String) -> Unit,
@@ -52,10 +57,12 @@ fun AuthScreen(
 
     var firstSuccessConsumed by remember { mutableStateOf(false) }
 
-    // ✅ Сбрасываем состояние при показе экрана
+    /*
+     * Сброс состояния при каждом показе экрана. 
+     * Это гарантирует, что пользователь всегда начинает с чистых полей и Idle-стейта.
+     */
     LaunchedEffect(Unit) {
         authViewModel.resetState()
-        // Сбрасываем локальные поля ввода
         login = ""
         email = ""
         password = ""
@@ -63,6 +70,10 @@ fun AuthScreen(
         firstSuccessConsumed = false
     }
 
+    /*
+     * Обработка изменений состояния аутентификации. 
+     * Успех триггерит переход на главный экран, ошибки отображаются через Toast.
+     */
     LaunchedEffect(state) {
         if (state is AuthState.Success && !firstSuccessConsumed) {
             firstSuccessConsumed = true

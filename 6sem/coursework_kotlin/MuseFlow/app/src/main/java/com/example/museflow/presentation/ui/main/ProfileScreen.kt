@@ -14,6 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.museflow.data.network.auth.TokenManager
 
+/*
+ * Экран профиля пользователя. 
+ * Предоставляет возможности управления настройками приложения (тема оформления, очистка кэша) 
+ * и отображает текущий статус авторизации.
+ */
 @Composable
 fun ProfileScreen(
     tokenManager: TokenManager,
