@@ -304,7 +304,6 @@ com.example.museflow/
 | DELETE | `/playlists/{id}` | Удалить плейлист |
 | POST | `/playlists/{id}/tracks` | Добавить трек в плейлист |
 | DELETE | `/playlists/{id}/tracks/{trackId}` | Удалить трек из плейлиста |
-| GET | `/user/me` | Получить данные пользователя |
 
 **Base URL:** `http://10.0.2.2:8080/` (эмулятор) / `http://<IP-компьютера>:8080/` (реальное устройство)
 
