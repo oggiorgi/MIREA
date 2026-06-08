@@ -468,3 +468,11 @@ src/main/kotlin/
 **Аутентификация:** JWT-токен передаётся в заголовке `Authorization: Bearer <token>`
 
 ---
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/847f926f-9653-4838-a9ab-11821da114be"
+       alt="схема_навигации"
+       width="1536" height="1024" />
+  <br/>
+  <em>Рисунок 1:"Схема навигации"</em>
+</div>
