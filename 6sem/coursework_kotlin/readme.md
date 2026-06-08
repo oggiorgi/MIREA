@@ -481,7 +481,6 @@ src/main/kotlin/
 | DELETE | `/playlists/{id}` | Bearer token | Удаление плейлиста |
 | POST | `/playlists/{id}/tracks` | Bearer token | Добавление трека в плейлист |
 | DELETE | `/playlists/{id}/tracks/{trackId}` | Bearer token | Удаление трека из плейлиста |
-| GET | `/user/me` | Bearer token | Получение информации о текущем пользователе |
 
 **Base URL:** `http://localhost:8080/` (локальный запуск) / `http://<IP-адрес>:8080/` (доступ с других устройств)
 
