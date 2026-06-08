@@ -20,14 +20,64 @@ import org.example.utils.configureJWT
 import org.example.utils.configureLogging
 import org.jetbrains.exposed.sql.Database
 import java.io.File
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.example.database.users.Users
+import org.example.database.tracks.Tracks
+import org.example.database.playlists.Playlists
+import org.example.database.playlists.PlaylistTracks
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun main() {
-    Database.connect(
-        url = "jdbc:postgresql://localhost:5432/museflow",
-        driver = "org.postgresql.Driver",
-        user = "postgres",
-        password = "1234"
-    )
+    //ppgAdmin4
+//    Database.connect(
+//        url = "jdbc:postgresql://localhost:5432/museflow",
+//        driver = "org.postgresql.Driver",
+//        user = "postgres",
+//        password = "1234"
+//    )
+    //neonDB
+    val dbUrl = "jdbc:postgresql://ep-restless-king-ap190rvx-pooler.c-7.us-east-1.aws.neon.tech:5432/neondb"
+    val dbUser = "neondb_owner"
+    val dbPassword = "npg_0dScPwfBxQ5h"
+
+    val config = HikariConfig().apply {
+        jdbcUrl = dbUrl
+        username = dbUser
+        password = dbPassword
+        driverClassName = "org.postgresql.Driver"
+        maximumPoolSize = 10
+        minimumIdle = 2
+        idleTimeout = 300000
+        connectionTimeout = 30000
+        addDataSourceProperty("sslmode", "verify-full")
+    }
+
+    val dataSource = HikariDataSource(config)
+    Database.connect(dataSource)
+
+    try {
+        transaction {
+            SchemaUtils.create(
+                Users,
+                Tracks,
+                Playlists,
+                PlaylistTracks
+            )
+            println("Таблицы созданы успешно!")
+
+            val tables = exec("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'") { rs ->
+                val list = mutableListOf<String>()
+                while (rs.next()) list.add(rs.getString(1))
+                list
+            }
+            println("📋 Таблицы в базе: ${tables?.joinToString()}")
+        }
+    } catch (e: Exception) {
+        println("❌ Ошибка: ${e.message}")
+        e.printStackTrace()
+    }
 
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         install(CORS) {
