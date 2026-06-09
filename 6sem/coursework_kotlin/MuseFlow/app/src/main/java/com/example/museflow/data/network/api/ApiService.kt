@@ -1,15 +1,7 @@
 package com.example.museflow.data.network.api
 
-import com.example.museflow.data.network.models.AddTrackRequest
-import com.example.museflow.data.network.models.AuthResponse
-import com.example.museflow.data.network.models.CreatePlaylistRequest
-import com.example.museflow.data.network.models.LoginRequest
-import com.example.museflow.data.network.models.PlaylistDto
-import com.example.museflow.data.network.models.RegisterRequest
-import com.example.museflow.data.network.models.TrackDto
-import com.example.museflow.data.network.models.UpdatePlaylistRequest
+import com.example.museflow.data.network.models.*
 import retrofit2.Response
-import retrofit2.http.*
 
 /*
  * Интерфейс API приложения. 
@@ -17,33 +9,23 @@ import retrofit2.http.*
  * плейлистами и аутентификацией.
  */
 interface ApiService {
-    @POST("/login")
-    suspend fun login(@Body request: LoginRequest): AuthResponse
+    suspend fun login(request: LoginRequest): AuthResponse
 
-    @POST("/register")
-    suspend fun register(@Body request: RegisterRequest): AuthResponse
+    suspend fun register(request: RegisterRequest): AuthResponse
 
-    @GET("/tracks")
     suspend fun getTracks(): List<TrackDto>
 
-    @GET("/tracks/search")
-    suspend fun searchTracks(@Query("q") query: String): List<TrackDto>
+    suspend fun searchTracks(query: String): List<TrackDto>
 
-    @GET("/playlists")
     suspend fun getPlaylists(): List<PlaylistDto>
 
-    @POST("/playlists")
-    suspend fun createPlaylist(@Body request: CreatePlaylistRequest): PlaylistDto
+    suspend fun createPlaylist(request: CreatePlaylistRequest): PlaylistDto
 
-    @PUT("/playlists/{id}")
-    suspend fun updatePlaylist(@Path("id") id: Int, @Body request: UpdatePlaylistRequest): Response<Unit>
+    suspend fun updatePlaylist(id: Int, request: UpdatePlaylistRequest): Response<Unit>
 
-    @DELETE("/playlists/{id}")
-    suspend fun deletePlaylist(@Path("id") id: Int): Response<Unit>
+    suspend fun deletePlaylist(id: Int): Response<Unit>
 
-    @POST("/playlists/{id}/tracks")
-    suspend fun addTrackToPlaylist(@Path("id") playlistId: Int, @Body request: AddTrackRequest): Response<Unit>
+    suspend fun addTrackToPlaylist(playlistId: Int, request: AddTrackRequest): Response<Unit>
 
-    @DELETE("/playlists/{id}/tracks/{trackId}")
-    suspend fun removeTrackFromPlaylist(@Path("id") playlistId: Int, @Path("trackId") trackId: Int): Response<Unit>
+    suspend fun removeTrackFromPlaylist(playlistId: Int, trackId: Int): Response<Unit>
 }

@@ -2,13 +2,15 @@ package com.example.museflow.di
 
 import android.content.Context
 import com.example.museflow.data.network.api.ApiService
+import com.example.museflow.data.network.api.KtorApiService
 import com.example.museflow.data.network.auth.TokenManager
-import com.example.museflow.data.network.client.RetrofitClient
+import com.example.museflow.data.network.client.KtorClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.HttpClient
 import javax.inject.Singleton
 
 /*
@@ -27,10 +29,15 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideHttpClient(tokenManager: TokenManager): HttpClient {
+        return KtorClient.provideHttpClient(tokenManager)
+    }
+
+    @Provides
+    @Singleton
     fun provideApiService(
-        tokenManager: TokenManager,
-        @ApplicationContext context: Context
+        client: HttpClient
     ): ApiService {
-        return RetrofitClient.provideApiService(tokenManager, context)
+        return KtorApiService(client)
     }
 }
