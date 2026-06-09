@@ -1,13 +1,22 @@
 package com.example.museflow.data.network.models
 
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import com.google.gson.annotations.SerializedName
+@OptIn(InternalSerializationApi::class)
+@Serializable
 data class LoginRequest(val login: String, val password: String)
+
+@OptIn(InternalSerializationApi::class)
+@Serializable
 data class RegisterRequest(val login: String, val email: String, val password: String)
 
+@OptIn(InternalSerializationApi::class)
+@Serializable
 data class AuthResponse(
-    @SerializedName("token")
+    @SerialName("token")
     val token: String? = null,
-    @SerializedName("message")
+    @SerialName("message")
     val message: String? = null
 )
