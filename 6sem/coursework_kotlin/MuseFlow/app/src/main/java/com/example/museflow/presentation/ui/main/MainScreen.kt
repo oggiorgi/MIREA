@@ -10,8 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -27,10 +25,17 @@ import com.example.museflow.presentation.ui.playlists.PlaylistsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-/*
- * Главный экран приложения после авторизации. 
- * Реализует структуру с нижней навигацией (Bottom Navigation) и вложенным NavHost 
- * для переключения между разделами: Каталог, Плейлисты и Профиль.
+/**
+ * MainScreen — точка входа в основной функционал приложения после авторизации.
+ * 
+ * Данный экран реализует структуру с нижней навигацией (Bottom Navigation) и вложенным [NavHost].
+ * Стратегия навигации основана на разделении ответственности между вкладками:
+ * - Каталог: поиск и просмотр доступных треков.
+ * - Плейлисты: управление личными коллекциями пользователя.
+ * - Профиль: настройки аккаунта и приложения.
+ * 
+ * Переход на экран плеера осуществляется через внешний колбэк [onNavigateToPlayer],
+ * что позволяет плееру оставаться активным поверх всех экранов навигации.
  */
 @Composable
 fun MainScreen(
@@ -43,11 +48,13 @@ fun MainScreen(
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     catalogViewModel: CatalogViewModel,
-    playlistsViewModel: PlaylistsViewModel
+    playlistsViewModel: PlaylistsViewModel,
 ) {
     val bottomNavController = rememberNavController()
     val context = LocalContext.current
 
+    // Синхронизация состояния плейлистов для отображения в различных разделах.
+    // Это позволяет избежать повторных сетевых запросов при переключении между вкладками.
     val playlistsState by playlistsViewModel.state.collectAsState()
     val playlists = if (playlistsState is PlaylistsState.Success) {
         (playlistsState as PlaylistsState.Success).playlists
@@ -57,6 +64,7 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
+            // Реализация нижней панели навигации с динамической подсветкой активного маршрута
             NavigationBar {
                 val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -97,6 +105,8 @@ fun MainScreen(
             }
         }
     ) { paddingValues ->
+        // Основной контейнер навигации авторизованной зоны.
+        // Использование paddingValues обеспечивает корректный отступ контента от нижней панели.
         NavHost(
             navController = bottomNavController,
             startDestination = "catalog",
@@ -113,9 +123,10 @@ fun MainScreen(
                     playlists = playlists,
                     onAddToPlaylist = { playlistId, trackId ->
                         /*
-                         * Логика добавления трека в плейлист. 
-                         * Используется CoroutineScope для выполнения сетевого запроса 
-                         * и отображения результата через Toast.
+                         * Логика добавления трека в плейлист.
+                         * Запрос выполняется асинхронно через Ktor-клиент во ViewModel.
+                         * Использование [coroutineScope] здесь оправдано необходимостью отображения 
+                         * Toast в контексте UI после завершения сетевой операции.
                          */
                         coroutineScope.launch {
                             try {
@@ -176,7 +187,7 @@ fun MainScreen(
                     onTrackClick = { track ->
                         onNavigateToPlayer(track, tracks)
                     },
-                    onBack = { bottomNavController.popBackStack() }
+                    onBack = bottomNavController::popBackStack
                 )
             }
         }

@@ -7,15 +7,20 @@ import com.example.museflow.data.network.models.PlaylistDto
 import com.example.museflow.data.network.models.UpdatePlaylistRequest
 import com.example.museflow.domain.models.Playlist
 import com.example.museflow.domain.repository.PlaylistsRepository
-import kotlin.collections.map
 import retrofit2.HttpException
 
-/*
+/**
  * Репозиторий для управления плейлистами.
- * Инкапсулирует логику сетевых запросов и обработку специфических HTTP ошибок.
+ * 
+ * Данный класс инкапсулирует логику сетевого взаимодействия через [ApiService].
+ * Стратегия обработки ошибок:
+ * - Использование [HttpException] позволяет унифицированно обрабатывать ошибки
+ * как от старого Retrofit-слоя, так и от нового Ktor-слоя (через адаптер).
+ * - Конфликты (например, дублирование имен) обрабатываются специфично для предоставления
+ * понятной обратной связи пользователю.
  */
 class PlaylistsRepositoryImpl(
-    private val api: ApiService
+    private val api: ApiService,
 ) : PlaylistsRepository {
     override suspend fun getPlaylists(): List<Playlist> {
         return api.getPlaylists().map { it.toDomain() }
@@ -26,8 +31,8 @@ class PlaylistsRepositoryImpl(
             api.createPlaylist(CreatePlaylistRequest(name, coverUrl)).toDomain()
         } catch (e: HttpException) {
             /* 
-             * Обработка конфликта (409): если плейлист с таким именем уже есть, 
-             * выбрасываем информативное исключение для отображения в UI.
+             * Обработка конфликта (409): если плейлист с таким именем уже существует, 
+             * выбрасываем исключение с локализованным сообщением.
              */
             if (e.code() == 409) {
                 throw Exception("Плейлист с таким именем уже создан")
@@ -66,10 +71,12 @@ class PlaylistsRepositoryImpl(
     }
 }
 
-// Extension function для маппинга DTO в Domain модель
+/**
+ * Расширение для преобразования сетевой модели [PlaylistDto] в доменную модель [Playlist].
+ */
 fun PlaylistDto.toDomain(): Playlist = Playlist(
     id = id,
     name = name,
     coverUrl = coverUrl,
-    tracks = tracks.map { it.toDomain() }
+    tracks = tracks.map { it.toDomain() },
 )

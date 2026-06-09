@@ -5,9 +5,19 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.*
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 
+/**
+ * Реализация интерфейса [ApiService] с использованием Ktor HttpClient.
+ * 
+ * Данный класс заменяет предыдущую реализацию на Retrofit, обеспечивая более гибкое
+ * управление сетевыми запросами и конфигурацией клиента.
+ * Стратегия реализации:
+ * - Основные запросы (GET/POST) напрямую возвращают десериализованные DTO.
+ * - Методы изменения данных (PUT/DELETE) оборачиваются в [Response] для сохранения
+ * совместимости с существующей логикой обработки HTTP-статусов в слое Repository.
+ */
 class KtorApiService(private val client: HttpClient) : ApiService {
     override suspend fun login(request: LoginRequest): AuthResponse {
         return client.post("login") {
@@ -48,7 +58,7 @@ class KtorApiService(private val client: HttpClient) : ApiService {
             }
             Response.success(Unit)
         } catch (e: ResponseException) {
-            Response.error(e.response.status.value, ResponseBody.create(null, ""))
+            Response.error(e.response.status.value, "".toResponseBody(null))
         }
     }
 
@@ -57,7 +67,7 @@ class KtorApiService(private val client: HttpClient) : ApiService {
             client.delete("playlists/$id")
             Response.success(Unit)
         } catch (e: ResponseException) {
-            Response.error(e.response.status.value, ResponseBody.create(null, ""))
+            Response.error(e.response.status.value, "".toResponseBody(null))
         }
     }
 
@@ -68,7 +78,7 @@ class KtorApiService(private val client: HttpClient) : ApiService {
             }
             Response.success(Unit)
         } catch (e: ResponseException) {
-            Response.error(e.response.status.value, ResponseBody.create(null, ""))
+            Response.error(e.response.status.value, "".toResponseBody(null))
         }
     }
 
@@ -77,7 +87,7 @@ class KtorApiService(private val client: HttpClient) : ApiService {
             client.delete("playlists/$playlistId/tracks/$trackId")
             Response.success(Unit)
         } catch (e: ResponseException) {
-            Response.error(e.response.status.value, ResponseBody.create(null, ""))
+            Response.error(e.response.status.value, "".toResponseBody(null))
         }
     }
 }

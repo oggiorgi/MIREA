@@ -14,10 +14,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.museflow.data.network.auth.TokenManager
 
-/*
- * Экран профиля пользователя. 
- * Предоставляет возможности управления настройками приложения (тема оформления, очистка кэша) 
- * и отображает текущий статус авторизации.
+/**
+ * ProfileScreen — экран профиля и настроек приложения.
+ * 
+ * Предоставляет интерфейс для управления пользовательской сессией (выход) и
+ * глобальными настройками приложения (тема оформления, кэш).
+ * Данные пользователя извлекаются напрямую из [TokenManager], который инкапсулирует
+ * логику хранения токенов и пользовательской информации, полученной через Ktor/JWT.
  */
 @Composable
 fun ProfileScreen(
@@ -25,11 +28,11 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     onClearCache: () -> Unit,
     isDarkTheme: Boolean,
-    onThemeToggle: () -> Unit
+    onThemeToggle: () -> Unit,
 ) {
     val token = tokenManager.getToken()
     val username = tokenManager.getUsername()
-    val isLoggedIn = token != null && token.isNotEmpty()
+    val isLoggedIn = !token.isNullOrEmpty()
 
     Column(
         modifier = Modifier
