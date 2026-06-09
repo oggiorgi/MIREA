@@ -22,7 +22,7 @@ MuseFlow — это современный музыкальный плеер, п
 | **Архитектура** | Clean Architecture |
 | **DI** | Hilt |
 | **Навигация** | `androidx.navigation:navigation-compose` |
-| **Сеть** | Retrofit + OkHttp + Gson |
+| **Сеть** | Ktor Client + kotlinx.serialization |
 | **Аудио** | Media3 ExoPlayer + Media3 Session |
 | **Локальное хранилище** | Room (SQLite) |
 | **Аутентификация** | JWT (собственный бэкенд) |
@@ -47,7 +47,7 @@ MuseFlow — это современный музыкальный плеер, п
 
 ```
 com.example.museflow/
-
+│
 ├── data/                                                     — Слой данных
 │   ├── local/                                                — Локальное хранилище (кэш)
 │   │   ├── dao/                                              — Запросы к базе данных
@@ -57,16 +57,17 @@ com.example.museflow/
 │   │   └── MuseFlowDatabase.kt                               — Инициализация Room
 │   ├── network/                                              — Работа с сервером
 │   │   ├── api/                                              — Описание запросов к серверу
-│   │   │   └── ApiService.kt                                 — Список всех эндпоинтов
+│   │   │   ├── ApiService.kt                                 — Интерфейс всех сетевых эндпоинтов
+│   │   │   └── KtorApiService.kt                             — Реализация ApiService на Ktor Client
 │   │   ├── auth/                                             — Авторизация
 │   │   │   └── TokenManager.kt                               — Сохранение и получение JWT токена
 │   │   ├── client/                                           — Настройка HTTP
-│   │   │   └── RetrofitClient.kt                             — Retrofit + автоподстановка токена
-│   │   ├── models/                                           — Форматы данных для сервера
-│   │   │   ├── AuthRequest.kt                                — Запросы логина/регистрации + ответ сервера
-│   │   │   ├── PlaylistDto.kt                                — Как сервер отдаёт плейлист + перевод в модель
-│   │   │   ├── Requests.kt                                   — Тела запросов (создать плейлист и тд)
-│   │   │   └── TrackDto.kt                                   — Как сервер отдаёт трек + перевод в модель
+│   │   │   └── KtorClient.kt                                 — Ktor HttpClient + автоподстановка токена
+│   │   └── models/                                           — Форматы данных для сервера
+│   │       ├── AuthRequest.kt                                — Запросы логина/регистрации + ответ сервера
+│   │       ├── PlaylistDto.kt                                — Как сервер отдаёт плейлист + перевод в модель
+│   │       ├── Requests.kt                                   — Тела запросов (создать плейлист и тд)
+│   │       └── TrackDto.kt                                   — Как сервер отдаёт трек + перевод в модель
 │   └── repository/                                           — Реализация репозиториев
 │       ├── AuthRepositoryImpl.kt                             — Логин/регистрация через API + сохранение токена
 │       ├── PlaylistsRepositoryImpl.kt                        — Плейлисты: CRUD + добавление/удаление треков
@@ -74,7 +75,7 @@ com.example.museflow/
 │
 ├── di/                                                       — Внедрение зависимостей (Hilt)
 │   ├── DatabaseModule.kt                                     — Как создать базу данных Room
-│   ├── NetworkModule.kt                                      — Как создать Retrofit и TokenManager
+│   ├── NetworkModule.kt                                      — Как создать Ktor Client и TokenManager
 │   ├── RepositoryModule.kt                                   — Как создать репозитории
 │   └── UseCaseModule.kt                                      — Как создать UseCase'ы
 │
@@ -122,12 +123,19 @@ com.example.museflow/
 ├── services/                                                 — Фоновые сервисы
 │   └── PlaybackService.kt                                    — Плеер, который работает в фоне + уведомление
 │
+├── ui/                                                       — Темы и стили
+│   └── theme/
+│       ├── Color.kt                                          — Цветовая палитра (светлая/тёмная тема)
+│       ├── Theme.kt                                          — Настройка Material 3 темы
+│       └── Type.kt                                           — Типографика
+│
 ├── utils/                                                    — Вспомогательные функции
 │   └── FormatUtils.kt                                        — Форматирование времени и склонение числительных
 │
 ├── MainActivity.kt                                           — Точка входа: проверка токена и запуск экрана
 └── MuseFlowApplication.kt                                    — Application класс для Hilt
 ```
+
 ## Описание файлов проекта
 
 ### data/ — Слой данных
@@ -140,19 +148,25 @@ com.example.museflow/
 | `entities/TrackEntity.kt` | Room-сущность трека с полями: id, title, artist, duration, coverUrl, audioUrl, genre. Содержит функции маппинга в domain-модель |
 | `MuseFlowDatabase.kt` | База данных Room с таблицей треков. Реализует синглтон для доступа к БД |
 
-#### network/ — Сетевой слой (Retrofit)
+......................................................................................................................................................................................................................................................................
+
+---
+### network/ — Сетевой слой (Ktor Client)
 
 | Файл | Описание |
 |------|----------|
-| `api/ApiService.kt` | Интерфейс Retrofit API. Описывает все эндпоинты: логин, регистрация, получение треков, поиск, CRUD плейлистов |
+| `api/ApiService.kt` | Интерфейс API, определяющий все сетевые эндпоинты. Абстрагирует клиентскую часть от конкретной реализации HTTP-клиента |
+| `api/KtorApiService.kt` | Реализация `ApiService` на базе Ktor HttpClient. Обрабатывает все запросы к серверу: логин, регистрация, получение треков, поиск, CRUD плейлистов |
 | `auth/TokenManager.kt` | Менеджер для безопасного хранения JWT-токена и имени пользователя в SharedPreferences |
-| `client/RetrofitClient.kt` | Фабрика для создания Retrofit-клиента. Настраивает OkHttp с интерцептором для добавления Bearer-токена и логирования |
-| `models/AuthRequest.kt` | DTO для запросов аутентификации: LoginRequest (login, password) и RegisterRequest (login, email, password) |
+| `client/KtorClient.kt` | Фабрика для создания Ktor HttpClient. Настраивает базовый URL, ContentNegotiation (JSON), логирование и автоматическую подстановку Bearer-токена в заголовки |
+| `models/AuthRequest.kt` | DTO для запросов аутентификации: `LoginRequest`, `RegisterRequest`, `AuthResponse` |
 | `models/PlaylistDto.kt` | DTO для передачи данных плейлиста с сервера: id, userId, name, coverUrl, createdAt, tracks |
-| `models/Requests.kt` | DTO для запросов к API плейлистов: CreatePlaylistRequest, UpdatePlaylistRequest, AddTrackRequest |
+| `models/Requests.kt` | DTO для запросов к API плейлистов: `CreatePlaylistRequest`, `UpdatePlaylistRequest`, `AddTrackRequest` |
 | `models/TrackDto.kt` | DTO для передачи данных трека с сервера: id, title, artist, duration, coverUrl, audioUrl, genre |
 
-#### repository/ — Реализации репозиториев
+---
+
+### repository/ — Реализации репозиториев
 
 | Файл | Описание |
 |------|----------|
@@ -166,9 +180,9 @@ com.example.museflow/
 
 | Файл | Описание |
 |------|----------|
-| `DatabaseModule.kt` | Модуль для внедрения зависимостей базы данных Room. Предоставляет экземпляр MuseFlowDatabase и TrackDao |
-| `NetworkModule.kt` | Модуль для внедрения сетевых зависимостей. Предоставляет TokenManager и ApiService |
-| `RepositoryModule.kt` | Модуль для внедрения репозиториев. Предоставляет реализации AuthRepository, TracksRepository, PlaylistsRepository |
+| `DatabaseModule.kt` | Модуль для внедрения зависимостей базы данных Room. Предоставляет экземпляр `MuseFlowDatabase` и `TrackDao` |
+| `NetworkModule.kt` | Модуль для внедрения сетевых зависимостей. Предоставляет `TokenManager`, Ktor `HttpClient` и `ApiService` |
+| `RepositoryModule.kt` | Модуль для внедрения репозиториев. Предоставляет реализации `AuthRepository`, `TracksRepository`, `PlaylistsRepository` |
 | `UseCaseModule.kt` | Модуль для внедрения UseCase'ов. Предоставляет все UseCase для бизнес-логики |
 
 ---
@@ -180,29 +194,29 @@ com.example.museflow/
 | Файл | Описание |
 |------|----------|
 | `Playlist.kt` | Доменная модель плейлиста: id, name, coverUrl, tracks. Используется в UI и бизнес-логике |
-| `Track.kt` | Доменная модель трека с аннотацией @Parcelize для передачи между экранами. Поля: id, title, artist, duration, coverUrl, audioUrl, genre |
+| `Track.kt` | Доменная модель трека с аннотацией `@Parcelize` для передачи между экранами. Поля: id, title, artist, duration, coverUrl, audioUrl, genre |
 | `User.kt` | Доменная модель пользователя: id, login, email |
 
 #### repository/ — Интерфейсы репозиториев
 
 | Файл | Описание |
 |------|----------|
-| `AuthRepository.kt` | Интерфейс репозитория авторизации. Методы: login, register |
-| `PlaylistsRepository.kt` | Интерфейс репозитория плейлистов. Методы: getPlaylists, createPlaylist, updatePlaylist, deletePlaylist, addTrackToPlaylist, removeTrackFromPlaylist |
-| `TracksRepository.kt` | Интерфейс репозитория треков. Методы: getTracks, searchTracks, clearCache |
+| `AuthRepository.kt` | Интерфейс репозитория авторизации. Методы: `login`, `register` |
+| `PlaylistsRepository.kt` | Интерфейс репозитория плейлистов. Методы: `getPlaylists`, `createPlaylist`, `updatePlaylist`, `deletePlaylist`, `addTrackToPlaylist`, `removeTrackFromPlaylist` |
+| `TracksRepository.kt` | Интерфейс репозитория треков. Методы: `getTracks`, `searchTracks`, `clearCache` |
 
 #### usecase/ — UseCase'ы (бизнес-логика)
 
 | Файл | Описание |
 |------|----------|
-| `LoginUseCase.kt` | UseCase для входа пользователя. Вызывает AuthRepository.login |
-| `RegisterUseCase.kt` | UseCase для регистрации пользователя. Вызывает AuthRepository.register |
-| `GetTracksUseCase.kt` | UseCase для получения всех треков. Вызывает TracksRepository.getTracks |
-| `SearchTracksUseCase.kt` | UseCase для поиска треков. Вызывает TracksRepository.searchTracks |
-| `GetPlaylistsUseCase.kt` | UseCase для получения плейлистов. Вызывает PlaylistsRepository.getPlaylists |
-| `CreatePlaylistUseCase.kt` | UseCase для создания плейлиста. Вызывает PlaylistsRepository.createPlaylist |
-| `DeletePlaylistUseCase.kt` | UseCase для удаления плейлиста. Вызывает PlaylistsRepository.deletePlaylist |
-| `AddTrackToPlaylistUseCase.kt` | UseCase для добавления трека в плейлист. Возвращает Boolean (успех/конфликт) |
+| `LoginUseCase.kt` | UseCase для входа пользователя. Вызывает `AuthRepository.login` |
+| `RegisterUseCase.kt` | UseCase для регистрации пользователя. Вызывает `AuthRepository.register` |
+| `GetTracksUseCase.kt` | UseCase для получения всех треков. Вызывает `TracksRepository.getTracks` |
+| `SearchTracksUseCase.kt` | UseCase для поиска треков. Вызывает `TracksRepository.searchTracks` |
+| `GetPlaylistsUseCase.kt` | UseCase для получения плейлистов. Вызывает `PlaylistsRepository.getPlaylists` |
+| `CreatePlaylistUseCase.kt` | UseCase для создания плейлиста. Вызывает `PlaylistsRepository.createPlaylist` |
+| `DeletePlaylistUseCase.kt` | UseCase для удаления плейлиста. Вызывает `PlaylistsRepository.deletePlaylist` |
+| `AddTrackToPlaylistUseCase.kt` | UseCase для добавления трека в плейлист. Возвращает `Boolean` (успех/конфликт) |
 | `RemoveTrackFromPlaylistUseCase.kt` | UseCase для удаления трека из плейлиста |
 
 ---
@@ -214,7 +228,7 @@ com.example.museflow/
 | Файл | Описание |
 |------|----------|
 | `AuthScreen.kt` | Экран входа и регистрации. Поддерживает переключение между режимами. Валидация полей и обработка состояний (Loading, Success, Error) |
-| `AuthViewModel.kt` | ViewModel для экрана авторизации. Управляет состоянием, вызывает LoginUseCase и RegisterUseCase. Обрабатывает ошибки (400 — неверные учётные данные) |
+| `AuthViewModel.kt` | ViewModel для экрана авторизации. Управляет состоянием, вызывает `LoginUseCase` и `RegisterUseCase`. Обрабатывает ошибки (400 — неверные учётные данные) |
 
 #### ui/catalog/ — Каталог треков
 
@@ -241,7 +255,7 @@ com.example.museflow/
 
 | Файл | Описание |
 |------|----------|
-| `PlayerScreen.kt` | Экран аудиоплеера. Привязывается к PlaybackService, отображает прогресс-воспроизведения, кнопки управления (play/pause, next, previous). Автоматически синхронизирует состояние |
+| `PlayerScreen.kt` | Экран аудиоплеера. Привязывается к `PlaybackService`, отображает прогресс-воспроизведения, кнопки управления (play/pause, next, previous). Автоматически синхронизирует состояние |
 
 #### ui/playlists/ — Плейлисты
 
@@ -265,7 +279,17 @@ com.example.museflow/
 
 | Файл | Описание |
 |------|----------|
-| `FormatUtils.kt` | Утилиты:функция getTracksText (правильное склонение слова "трек"),функция formatDuration (преобразование секунд в 0:00) |
+| `FormatUtils.kt` | Утилиты: функция `getTracksText` (правильное склонение слова "трек"), функция `formatDuration` (преобразование секунд в MM:SS) |
+
+---
+
+### ui/theme/ — UI темы
+
+| Файл | Описание |
+|------|----------|
+| `Color.kt` | Цветовая палитра приложения для светлой и тёмной темы |
+| `Theme.kt` | Настройка темы Compose. Определяет светлую и тёмную тему с использованием Material 3 |
+| `Type.kt` | Типографика приложения: размеры шрифтов, начертания, межстрочные интервалы |
 
 ---
 
@@ -274,7 +298,7 @@ com.example.museflow/
 | Файл | Описание |
 |------|----------|
 | `MainActivity.kt` | Главная Activity приложения. При запуске проверяет наличие JWT-токена в SharedPreferences. Если токен есть — переходит на главный экран (MainScreen), иначе — на экран авторизации (AuthScreen). Управляет темой, запрашивает разрешение на уведомления (Android 13+). Обрабатывает выход из аккаунта (очистка токена, остановка сервиса, сброс ViewModel) |
-| `MuseFlowApplication.kt` | Класс приложения с аннотацией @HiltAndroidApp. Инициализирует Dagger Hilt |
+| `MuseFlowApplication.kt` | Класс приложения с аннотацией `@HiltAndroidApp`. Инициализирует Dagger Hilt |
 
 
 ---
@@ -345,6 +369,8 @@ src/main/kotlin/
     ├── EmailValidator.kt                          — Валидация email
     ├── JWTConfig.kt                               — Настройка JWT-аутентификации
     └── PasswordHasher.kt                          — Хеширование и проверка паролей (BCrypt)
+
+
 ```
 
 ---
