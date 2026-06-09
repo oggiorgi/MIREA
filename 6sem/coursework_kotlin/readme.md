@@ -374,8 +374,6 @@ src/main/kotlin/
     ├── EmailValidator.kt                          — Валидация email
     ├── JWTConfig.kt                               — Настройка JWT-аутентификации
     └── PasswordHasher.kt                          — Хеширование и проверка паролей (BCrypt)
-
-
 ```
 
 ---
