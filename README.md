@@ -6,7 +6,7 @@
 ### [📁 **5sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/5sem/Kotlin)
 Проектирование и разработка мобильных приложений на языке Котлин (часть 1/1) [I.25-26]
 
-### [📁 **6sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/Kotlin)
+### [📁 **6sem_Kotlin** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/kotlin)
 Разработка клиент-серверных мобильных приложений (часть 1/1) [II.25-26]
 
 ### [📁 **6sem_kotlin_coursework** ↗](https://github.com/oggiorgi/MIREA/tree/main/6sem/coursework_kotlin)
