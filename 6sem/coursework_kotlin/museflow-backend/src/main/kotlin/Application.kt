@@ -31,31 +31,31 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun main() {
     //ppgAdmin4
-//    Database.connect(
-//        url = "jdbc:postgresql://localhost:5432/museflow",
-//        driver = "org.postgresql.Driver",
-//        user = "postgres",
-//        password = "1234"
-//    )
+    Database.connect(
+        url = "jdbc:postgresql://localhost:5432/museflow",
+        driver = "org.postgresql.Driver",
+        user = "postgres",
+        password = "1234"
+    )
     //neonDB
-    val dbUrl = "jdbc:postgresql://ep-restless-king-ap190rvx-pooler.c-7.us-east-1.aws.neon.tech:5432/neondb"
-    val dbUser = "neondb_owner"
-    val dbPassword = "npg_0dScPwfBxQ5h"
-
-    val config = HikariConfig().apply {
-        jdbcUrl = dbUrl
-        username = dbUser
-        password = dbPassword
-        driverClassName = "org.postgresql.Driver"
-        maximumPoolSize = 10
-        minimumIdle = 2
-        idleTimeout = 300000
-        connectionTimeout = 30000
-        addDataSourceProperty("sslmode", "verify-full")
-    }
-
-    val dataSource = HikariDataSource(config)
-    Database.connect(dataSource)
+//    val dbUrl = "jdbc:postgresql://ep-restless-king-ap190rvx-pooler.c-7.us-east-1.aws.neon.tech:5432/neondb"
+//    val dbUser = "neondb_owner"
+//    val dbPassword = "npg_0dScPwfBxQ5h"
+//
+//    val config = HikariConfig().apply {
+//        jdbcUrl = dbUrl
+//        username = dbUser
+//        password = dbPassword
+//        driverClassName = "org.postgresql.Driver"
+//        maximumPoolSize = 10
+//        minimumIdle = 2
+//        idleTimeout = 300000
+//        connectionTimeout = 30000
+//        addDataSourceProperty("sslmode", "require")
+//    }
+//
+//    val dataSource = HikariDataSource(config)
+//    Database.connect(dataSource)
 
     try {
         transaction {
